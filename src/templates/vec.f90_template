@@ -1,0 +1,46 @@
+! T_TYPE contained type
+! T_ALIAS contained type name alias
+! T_MOD defined if C_TYPE if a derived type. This is the module of the type.
+
+#include "macros.f90_template"
+
+! name of module
+#define MOD_NAME CAT2(vec_mod_,T_ALIAS)
+
+! name of vec type
+#define VEC CAT2(vec_,T_ALIAS)
+
+! the thing you use to use T_TYPE
+#ifdef T_MOD
+#define TT_TYPE type(T_TYPE)
+#else
+#define TT_TYPE T_TYPE
+#endif
+
+! macro for defining unique function/subroutine names
+#define F(f) CAT3(f,_,VEC)
+
+module MOD_NAME
+#ifdef T_MOD
+    use T_MOD, only: T_TYPE
+#endif
+    implicit none
+    !
+    type VEC
+        integer :: length
+        TT_TYPE, allocatable :: data(:)
+    contains
+        final :: F(finalizer)
+    end type
+contains
+    subroutine F(finalizer)(self)
+        implicit none
+        !
+        type(VEC), intent(inout) :: self
+        !
+        if (allocated(self%data)) then
+            print *, "Deallocated"
+            deallocate (self%data)
+        end if
+    end subroutine
+end module

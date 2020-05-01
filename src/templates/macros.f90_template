@@ -1,0 +1,3 @@
+#define PASTE(a) a
+#define CAT2(a, b) PASTE(a)b
+#define CAT3(a, b, c) PASTE(a)CAT2(b,c)
