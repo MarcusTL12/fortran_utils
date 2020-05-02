@@ -1,6 +1,8 @@
 module string_util_mod
     use astring_mod
     use vec_str_mod
+    use str_ref_mod
+    use vec_str_ref_mod
     !
     implicit none
     !
@@ -20,6 +22,7 @@ module string_util_mod
     end interface
     !
     interface parse_int
+        module procedure str_slice_to_int
         module procedure str_to_int
         module procedure chars_to_int
     end interface
@@ -95,32 +98,30 @@ contains
         end do
     end function
     !
-    function split_with_delim(str, delim) result(ret)
+    subroutine split_with_delim(str, delim, ret)
         implicit none
         !
-        type(astring), intent(in) :: str
-        character, intent(in)     :: delim
-        type(vec_str)             :: ret
-        type(astring)  :: buffer, buffer2
-        integer        :: i
+        character, pointer, intent(in)      :: str(:)
+        character, intent(in)               :: delim
+        type(vec_str_ref), intent(inout)    :: ret
+        type(str_ref)  :: buffer
+        integer        :: i, j
         !
-        call ret%new()
-        call buffer%new()
-        !
+        print *, str
+        j = 1
         do i = 1, size(str)
-            if (str%data(i) == delim) then
-                buffer2 = buffer
-                call ret%push(buffer2)
-                call buffer%clear()
-            else
-                call buffer%push(str%data(i))
+            ! print *, i, j
+            if (str(i) == delim) then
+                ! print *, i
+                buffer%data => str(j:i - 1)
+                call ret%push(buffer)
+                j = i + 1
             end if
         end do
         !
-        buffer2 = buffer
-        call ret%push(buffer2)
-        call buffer%clear()
-    end function
+        buffer%data => str(j:size(str))
+        call ret%push(buffer)
+    end subroutine
     !
     logical function readline_to_string(unit, s) result(res)
         implicit none
@@ -152,22 +153,30 @@ contains
 8       res = .false.
     end function
     !
-    pure integer function str_to_int(s)
+    integer function str_to_int(s)
         implicit none
         !
         type(astring), intent(in) :: s
+        !
+        str_to_int = parse_int(s%as_slice())
+    end function
+    !
+    integer function str_slice_to_int(s)
+        implicit none
+        !
+        character, intent(in) :: s(:)
         character(len=20) :: buf
         integer :: i
         !
         buf = ''
         do i = 1, size(s)
-            buf(i:i) = s%data(i)
+            buf(i:i) = s(i)
         end do
         !
-        str_to_int = parse_int(buf)
+        str_slice_to_int = parse_int(buf)
     end function
     !
-    pure integer function chars_to_int(s)
+    integer function chars_to_int(s)
         implicit none
         !
         character(len=*), intent(in) :: s

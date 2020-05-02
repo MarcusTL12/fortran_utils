@@ -4,6 +4,8 @@ program main
     use vec_str_mod
     use vec_vec_int_mod
     use string_util_mod
+    use str_ref_mod
+    use vec_str_ref_mod
     implicit none
     !
     character(len=10) :: arg
@@ -29,6 +31,8 @@ program main
         call test8()
     case ('9')
         call test9()
+    case ('10')
+        call test10()
     case default
         print *, "not implemented"
     end select
@@ -176,12 +180,14 @@ contains
         implicit none
         !
         type(astring) :: s
-        type(vec_str) :: v
+        type(vec_str_ref) :: v
         integer :: i
         !
         s = tostring("Marcus,Takvam,Lexander")
         !
-        v = split_with_delim(s, ',')
+        call v%new()
+        !
+        call split_with_delim(s%as_slice(), ',', v)
         !
         do i = 1, size(v)
             call show(v%at(i))
@@ -219,5 +225,23 @@ contains
         print *
         call show(parse_int(b))
         print *
+    end subroutine
+    !
+    subroutine test10()
+        implicit none
+        !
+        character :: a(3)
+        !
+        a = (/'3', '1', '4'/)
+        !
+        call tmp(a)
+    end subroutine
+    !
+    subroutine tmp(x)
+        implicit none
+        !
+        character, intent(in) :: x(:)
+        !
+        print *, x
     end subroutine
 end program main

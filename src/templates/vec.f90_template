@@ -56,6 +56,8 @@ module MOD_NAME
         procedure           :: F(from_arr)
         generic, public     :: assignment(=) => F(from_vec), F(from_arr)
         procedure, public   :: clear => F(clear)
+        procedure, public   :: from_borrow => F(from_borrow)
+        procedure, public   :: as_slice => F(as_slice)
     end type
     !
     public :: size
@@ -80,7 +82,7 @@ contains
         integer :: i
         !
         if (self%owned .and. associated(self%data)) then
-            print *, "Deallocated"
+            ! print *, "Deallocated"
             do i = 1, size(self)
                 call drop(self%data(i))
             end do
@@ -165,11 +167,11 @@ contains
         !
         type(VEC), intent(inout) :: a, b
         !
-        a%owned = .false.
         b%data => a%data
         b%length = a%length
-        b%owned = .true.
-        nullify (a%data)
+        if (a%owned) nullify (a%data)
+        b%owned = a%owned
+        a%owned = .false.
     end subroutine
     !
     subroutine F(from_vec)(self, other)
@@ -216,6 +218,27 @@ contains
         !
         self%length = 0
     end subroutine
+    !
+    subroutine F(from_borrow)(self, other)
+        implicit none
+        !
+        class(VEC), intent(inout) :: self
+        TT_TYPE, pointer, intent(in) :: other(:)
+        !
+        call drop(self)
+        self%data => other
+        self%length = size(other)
+        self%owned = .false.
+    end subroutine
+    !
+    function F(as_slice)(self)
+        implicit none
+        !
+        class(VEC), intent(in) :: self
+        TT_TYPE, pointer :: F(as_slice)(:)
+        !
+        F(as_slice) => self%data(1:size(self))
+    end function
 end module
 
 #undef T_TYPE
