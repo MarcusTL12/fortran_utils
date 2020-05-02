@@ -1,4 +1,6 @@
 module str_ref_mod
+    use hash_mod
+    !
     implicit none
     !
     type str_ref
@@ -15,6 +17,10 @@ module str_ref_mod
     !
     interface show
         module procedure show_str_ref
+    end interface
+    !
+    interface hash
+        module procedure hash_str_ref
     end interface
 contains
     subroutine drop_str_ref(s)
@@ -43,4 +49,13 @@ contains
             write (*, '(A)', advance='no') s%data(i)
         end do
     end subroutine
+    !
+    function hash_str_ref(s) result(h)
+        implicit none
+        !
+        type(str_ref), intent(in) :: s
+        integer(8) :: h
+        !
+        h = hash(s%data)
+    end function
 end module

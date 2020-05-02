@@ -6,6 +6,7 @@ program main
     use string_util_mod
     use str_ref_mod
     use vec_str_ref_mod
+    use hash_mod
     implicit none
     !
     character(len=10) :: arg
@@ -230,18 +231,9 @@ contains
     subroutine test10()
         implicit none
         !
-        character :: a(3)
+        type(astring) :: s
+        s = tostring("Marcus!!")
         !
-        a = (/'3', '1', '4'/)
-        !
-        call tmp(a)
-    end subroutine
-    !
-    subroutine tmp(x)
-        implicit none
-        !
-        character, intent(in) :: x(:)
-        !
-        print *, x
+        print *, hash(s)
     end subroutine
 end program main
