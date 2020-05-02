@@ -1,15 +1,20 @@
 module astring_mod
+    use ownership_mod
+    !
     implicit none
     !
+    private
+    !
+    public :: astring
     type astring
-        character, allocatable :: data(:)
+        character, pointer :: data(:)
     contains
-        procedure       :: new_astring_from_arr
-        procedure       :: new_astring_from_string
-        generic, public :: new => new_astring_from_arr, &
-            new_astring_from_string
-        generic, public :: assignment(=) => new_astring_from_arr, &
-            new_astring_from_string
+        procedure       :: new => new_astring
+        procedure       :: astring_from_arr
+        procedure       :: astring_from_string
+        procedure       :: astring_from_astring
+        generic, public :: assignment(=) => astring_from_arr, &
+            astring_from_string, astring_from_astring
         final           :: astringfinalizer
         procedure       :: astring_eq
         generic, public :: operator(==) => astring_eq
@@ -17,6 +22,7 @@ module astring_mod
         generic, public :: operator(/=) => astring_neq
     end type
     !
+    public :: size
     interface size
         module procedure astring_size
     end interface
@@ -30,41 +36,96 @@ module astring_mod
     interface write (formatted)
         module procedure astring_write_f
     end interface
+    !
+    public :: transfer
+    interface transfer
+        module procedure astring_transfer
+    end interface
+    !
+    public :: drop
+    interface drop
+        module procedure astringfinalizer
+    end interface
+    !
+    public :: show
+    interface show
+        module procedure astring_show
+    end interface
 contains
+    subroutine new_astring(self, l)
+        implicit none
+        !
+        class(astring), intent(out) :: self
+        integer, intent(in) :: l
+        !
+        call drop(self)
+        !
+        allocate (self%data(l))
+    end subroutine
+    !
     subroutine astringfinalizer(self)
         implicit none
         !
         type(astring), intent(inout) :: self
         !
-        print *, "trying to deallocate"
+        ! print *, "trying to deallocate"
         !
-        if (allocated(self%data)) then
+        if (associated(self%data)) then
             print *, "Deallocated: ", self%data
             deallocate (self%data)
         end if
     end subroutine astringfinalizer
     !
-    subroutine new_astring_from_arr(self, str)
+    subroutine astring_from_arr(self, str)
         implicit none
         !
         class(astring), intent(out) :: self
-        character, intent(in) :: str(:)
+        character, intent(in)       :: str(:)
+        integer :: i
         !
-        self%data = str
+        ! call astringfinalizer(self)
+        ! !
+        ! allocate (self%data(size(str)))
+        !
+        call self%new(size(str))
+        !
+        do i = 1, size(str)
+            self%data(i) = str(i)
+        end do
     end subroutine
     !
-    subroutine new_astring_from_string(self, str)
+    subroutine astring_from_string(self, str)
         implicit none
         !
         class(astring), intent(inout) :: self
         character(len=*), intent(in) :: str
         integer        :: i
         !
-        call astringfinalizer(self)
-        allocate (self%data(len_trim(str)))
+        ! call astringfinalizer(self)
+        ! allocate (self%data(len_trim(str)))
+        !
+        call self%new(len_trim(str))
         !
         do i = 1, size(self%data)
             self%data(i) = str(i:i)
+        end do
+    end subroutine
+    !
+    subroutine astring_from_astring(self, other)
+        implicit none
+        !
+        class(astring), intent(inout)   :: self
+        type(astring), intent(in)       :: other
+        integer :: i
+        !
+        ! call astringfinalizer(self)
+        ! !
+        ! allocate (self%data(size(other)))
+        !
+        call self%new(size(other))
+        !
+        do i = 1, size(other)
+            self%data(i) = other%data(i)
         end do
     end subroutine
     !
@@ -130,5 +191,27 @@ contains
         dummy1 = len(iotype)
         !
         write (unit, *, iostat=iostat, iomsg=iomsg) self%data
+    end subroutine
+    !
+    subroutine astring_transfer(a, b)
+        implicit none
+        !
+        type(astring), intent(inout) :: a, b
+        !
+        b%data => a%data
+        nullify (a%data)
+    end subroutine
+    !
+    subroutine astring_show(str)
+        implicit none
+        !
+        type(astring), intent(in) :: str
+        integer :: i
+        !
+        write (*, '(A)', advance='no') '"'
+        do i = 1, size(str)
+            write (*, '(A)', advance='no') str%data(i)
+        end do
+        write (*, '(A)', advance='no') '"'
     end subroutine
 end module

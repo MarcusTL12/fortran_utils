@@ -5,7 +5,7 @@
 #include "macros.f90_template"
 
 ! name of module
-#define MOD_NAME CAT2(vec_mod_,T_ALIAS)
+#define MOD_NAME CAT3(vec_,T_ALIAS,_mod)
 
 ! name of vec type
 #define VEC CAT2(vec_,T_ALIAS)
@@ -20,27 +20,199 @@
 ! macro for defining unique function/subroutine names
 #define F(f) CAT3(f,_,VEC)
 
+! the default initial capacity of a new vector
+#define INIT_CAP 8
+
+! the factor to increase the vec with when reallocating
+#define GROWTH_FACTOR 2
+
 module MOD_NAME
 #ifdef T_MOD
-    use T_MOD, only: T_TYPE
+    use T_MOD
 #endif
+    use ownership_mod
     implicit none
     !
+    private
+    !
+    public :: VEC
     type VEC
         integer :: length
-        TT_TYPE, allocatable :: data(:)
+        logical :: owned = .false.
+        TT_TYPE, pointer :: data(:) => null()
     contains
         final :: F(finalizer)
+        procedure, public   :: with_capacity => F(with_capacity)
+        procedure, public   :: new => F(new)
+        procedure, public   :: push => F(push)
+        procedure, public   :: at => F(at)
+        procedure           :: F(from_vec)
+        procedure           :: F(from_arr)
+        generic, public     :: assignment(=) => F(from_vec), F(from_arr)
+        procedure, public   :: clear => F(clear)
     end type
+    !
+    public :: size
+    interface size
+        module procedure F(size)
+    end interface
+    !
+    public :: transfer
+    interface transfer
+        module procedure F(transfer)
+    end interface
+    !
+    public :: drop
+    interface drop
+        module procedure F(finalizer)
+    end interface
 contains
     subroutine F(finalizer)(self)
         implicit none
         !
         type(VEC), intent(inout) :: self
+        integer :: i
         !
-        if (allocated(self%data)) then
+        if (self%owned .and. associated(self%data)) then
             print *, "Deallocated"
+            do i = 1, size(self)
+                call drop(self%data(i))
+            end do
             deallocate (self%data)
         end if
     end subroutine
+    !
+    subroutine F(with_capacity)(self, cap)
+        implicit none
+        !
+        class(VEC), intent(inout) :: self
+        integer, intent(in) :: cap
+        !
+        call drop(self)
+        !
+        self%owned = .true.
+        allocate (self%data(cap))
+        self%length = 0
+    end subroutine
+    !
+    subroutine F(new)(self)
+        implicit none
+        !
+        class(VEC), intent(inout) :: self
+        !
+        call self%with_capacity(INIT_CAP)
+    end subroutine
+    !
+    pure integer function F(size)(self)
+        implicit none
+        !
+        type(VEC), intent(in) :: self
+        !
+        F(size) = self%length
+    end function
+    !
+    subroutine F(reallocate)(self)
+        implicit none
+        !
+        type(VEC), intent(inout) :: self
+        TT_TYPE, pointer :: ndata(:)
+        integer :: i
+        !
+        ! print *, "reallocating"
+        !
+        allocate (ndata(size(self%data) * GROWTH_FACTOR))
+        !
+        do i = 1, size(self)
+            call transfer(self%data(i), ndata(i))
+        end do
+        !
+        deallocate (self%data)
+        self%data => ndata
+    end subroutine
+    !
+    subroutine F(push)(self, val)
+        implicit none
+        !
+        class(VEC), intent(inout) :: self
+        TT_TYPE, intent(inout)   :: val
+        !
+        if (size(self) >= size(self%data)) then
+            call F(reallocate)(self)
+        end if
+        !
+        self%length = self%length + 1
+        call transfer(val, self%data(self%length))
+    end subroutine
+    !
+    function F(at)(self, ind)
+        implicit none
+        !
+        class(VEC), intent(inout)   :: self
+        integer, intent(in)         :: ind
+        TT_TYPE, pointer            :: F(at)
+        !
+        F(at) => self%data(ind)
+    end function
+    !
+    subroutine F(transfer)(a, b)
+        implicit none
+        !
+        type(VEC), intent(inout) :: a, b
+        !
+        a%owned = .false.
+        b%data => a%data
+        b%length = a%length
+        b%owned = .true.
+        nullify (a%data)
+    end subroutine
+    !
+    subroutine F(from_vec)(self, other)
+        implicit none
+        !
+        class(VEC), intent(inout)   :: self
+        type(VEC), intent(in)       :: other
+        TT_TYPE                     :: buffer
+        integer                     :: i
+        !
+        call self%with_capacity(size(other))
+        !
+        do i = 1, size(other)
+            buffer = other%data(i)
+            call self%push(buffer)
+        end do
+    end subroutine
+    !
+    subroutine F(from_arr)(self, other)
+        implicit none
+        !
+        class(VEC), intent(inout)   :: self
+        TT_TYPE, intent(in)         :: other(:)
+        TT_TYPE                     :: buffer
+        integer                     :: i
+        !
+        call self%with_capacity(size(other))
+        !
+        do i = 1, size(other)
+            buffer = other(i)
+            call self%push(buffer)
+        end do
+    end subroutine
+    !
+    subroutine F(clear)(self)
+        implicit none
+        !
+        class(VEC), intent(inout) :: self
+        integer :: i
+        !
+        do i = 1, size(self)
+            call drop(self%data(i))
+        end do
+        !
+        self%length = 0
+    end subroutine
 end module
+
+#undef T_TYPE
+#undef T_ALIAS
+#undef T_MOD
+#undef TT_TYPE
