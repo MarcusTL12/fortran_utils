@@ -107,7 +107,7 @@ contains
         type(str_ref)  :: buffer
         integer        :: i, j
         !
-        print *, str
+        ! print *, str
         j = 1
         do i = 1, size(str)
             ! print *, i, j
