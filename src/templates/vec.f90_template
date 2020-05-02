@@ -1,14 +1,20 @@
 ! T_TYPE contained type
 ! T_ALIAS contained type name alias
 ! T_MOD defined if C_TYPE if a derived type. This is the module of the type.
+! T_VEC defined if you want to override the auto generated name i.e. string
 
 #include "macros.f90_template"
 
-! name of module
-#define MOD_NAME CAT3(vec_,T_ALIAS,_mod)
 
 ! name of vec type
+#ifdef T_VEC
+#define VEC T_VEC
+#else
 #define VEC CAT2(vec_,T_ALIAS)
+#endif
+
+! name of module
+#define MOD_NAME CAT2(VEC,_mod)
 
 ! the thing you use to use T_TYPE
 #ifdef T_MOD
@@ -216,3 +222,5 @@ end module
 #undef T_ALIAS
 #undef T_MOD
 #undef TT_TYPE
+#undef T_VEC
+#undef VEC
