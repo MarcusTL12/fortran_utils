@@ -25,6 +25,10 @@ program main
         call test6()
     case ('7')
         call test7()
+    case ('8')
+        call test8()
+    case ('9')
+        call test9()
     case default
         print *, "not implemented"
     end select
@@ -36,27 +40,34 @@ contains
         type(astring), target :: b
         type(astring), pointer :: c
         !
-        a = 'Hello astring'
+        a = tostring('Hello astring')
+        call show(a)
+        print *
         !
         call transfer(a, b)
         !
         b%data(2) = 'Q'
         !
-        print *, a
-        print *, b
+        call show(b)
+        print *
         !
         c => b
         !
         c%data(2) = 'H'
         !
-        print *, b
-        print *, c
+        call show(b)
+        print *
+        call show(c)
+        print *
         !
         a = c
         !
-        print *, a
-        print *, b
-        print *, c
+        call show(a)
+        print *
+        call show(b)
+        print *
+        call show(c)
+        print *
     end subroutine
     !
     subroutine test2()
@@ -88,21 +99,20 @@ contains
         !
         call v%with_capacity(1)
         !
-        s = "Marcus"
+        s = tostring("Marcus")
         call v%push(s)
         !
-        s = "Takvam"
+        s = tostring("Takvam")
         call v%push(s)
         !
-        s = "Lexander"
+        s = tostring("Lexander")
         call v%push(s)
         !
         a => v%at(2)
         ! a%data(4) = 'V'
         s = a
         !
-        print *, v%data
-        print *, s
+        call show(v)
     end subroutine
     !
     subroutine test4()
@@ -140,13 +150,13 @@ contains
         !
         call a%with_capacity(1)
         !
-        s = "Marcus"
+        s = tostring("Marcus")
         call a%push(s)
         !
-        s = "Takvam"
+        s = tostring("Takvam")
         call a%push(s)
         !
-        s = "Lexander"
+        s = tostring("Lexander")
         call a%push(s)
         !
         b = a
@@ -169,7 +179,7 @@ contains
         type(vec_str) :: v
         integer :: i
         !
-        s = "Marcus,Takvam,Lexander"
+        s = tostring("Marcus,Takvam,Lexander")
         !
         v = split_with_delim(s, ',')
         !
@@ -177,5 +187,37 @@ contains
             call show(v%at(i))
             print *
         end do
+    end subroutine
+    !
+    subroutine test8()
+        implicit none
+        !
+        type(astring) :: buffer
+        !
+        call buffer%new()
+        !
+        open (1, file="res/testfile.txt")
+        !
+        do while (readline(1, buffer))
+            call show(buffer)
+            print *
+            call buffer%clear()
+        end do
+        !
+        close (1)
+    end subroutine
+    !
+    subroutine test9()
+        implicit none
+        !
+        type(astring) :: a
+        character(len=5) :: b = "12345"
+        !
+        a = tostring("-31415")
+        !
+        call show(parse_int(a))
+        print *
+        call show(parse_int(b))
+        print *
     end subroutine
 end program main

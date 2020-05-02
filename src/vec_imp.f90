@@ -6,6 +6,7 @@
 
 #define T_TYPE character
 #define T_ALIAS char
+#define T_VEC astring
 
 #include "templates/vec.f90_template"
 
