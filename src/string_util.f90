@@ -101,7 +101,7 @@ contains
     subroutine split_with_delim(str, delim, ret)
         implicit none
         !
-        character, pointer, intent(in)      :: str(:)
+        character, target, intent(in)       :: str(:)
         character, intent(in)               :: delim
         type(vec_str_ref), intent(inout)    :: ret
         type(str_ref)  :: buffer
