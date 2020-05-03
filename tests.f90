@@ -343,5 +343,8 @@ contains
             call show(v)
             print *
         end do
+        !
+        print *, m%contains_key(s(7))
+        print *, m%contains_key(s(6))
     end subroutine
 end program main

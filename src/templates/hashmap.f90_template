@@ -87,6 +87,7 @@ module MOD_NAME
         procedure, public   :: first_key => F(first_key)
         procedure, public   :: next_kvp => F(next_kvp)
         procedure           :: reallocate => F(reallocate)
+        procedure, public   :: contains_key => F(contains_key)
     end type
     !
     public :: drop
@@ -354,6 +355,16 @@ contains
         !
         call transfer(other, self)
     end subroutine
+    !
+    logical function F(contains_key) (self, key) result(r)
+        implicit none
+        !
+        class(MAP), intent(in)  :: self
+        KT_TYPE, intent(in)     :: key
+        integer :: ind
+        !
+        call self%key_to_ind(key, ind, r)
+    end function
 end module
 
 #undef K_TYPE
