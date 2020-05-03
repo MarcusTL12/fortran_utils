@@ -4,8 +4,6 @@ program main
     use vec_str_mod
     use vec_vec_int_mod
     use string_util_mod
-    use str_ref_mod
-    use vec_str_ref_mod
     use map_int_int_mod
     use map_str_str_mod
     implicit none
@@ -39,6 +37,8 @@ program main
         call test11()
     case ('12')
         call test12()
+    case ('13')
+        call test13()
     case default
         print *, "not implemented"
     end select
@@ -186,7 +186,7 @@ contains
         implicit none
         !
         type(astring) :: s
-        type(vec_str_ref) :: v
+        type(vec_str) :: v
         integer :: i
         !
         s = tostring("Marcus,Takvam,Lexander")
@@ -327,11 +327,11 @@ contains
         call a%from_borrow(s(3)%as_slice())
         call b%from_borrow(s(4)%as_slice())
         call m%insert(a, b)
-        ! !
+        !
         call a%from_borrow(s(5)%as_slice())
         call b%from_borrow(s(6)%as_slice())
         call m%insert(a, b)
-        ! !
+        !
         call a%from_borrow(s(7)%as_slice())
         call b%from_borrow(s(8)%as_slice())
         call m%insert(a, b)
@@ -346,5 +346,33 @@ contains
         !
         print *, m%contains_key(s(7))
         print *, m%contains_key(s(6))
+    end subroutine
+    !
+    subroutine test13()
+        implicit none
+        !
+        type(astring) :: s
+        !
+        s = tostring("Marcus,Takvam,Lexander")
+        !
+        call tmp(s%as_slice())
+    end subroutine
+    !
+    subroutine tmp(s)
+        implicit none
+        !
+        character, target, intent(in)   :: s(:)
+        character, pointer :: a(:)
+        type(astring) :: b
+        !
+        a => s(1 : 6)
+        call b%from_borrow(a)
+        call show(b)
+        print *
+        !
+        a => s(8 : 13)
+        call b%from_borrow(a)
+        call show(b)
+        print *
     end subroutine
 end program main

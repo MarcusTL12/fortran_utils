@@ -1,8 +1,6 @@
 module string_util_mod
     use astring_mod
     use vec_str_mod
-    use str_ref_mod
-    use vec_str_ref_mod
     !
     implicit none
     !
@@ -101,25 +99,25 @@ contains
     subroutine split_with_delim(str, delim, ret)
         implicit none
         !
-        character, target, intent(in)       :: str(:)
-        character, intent(in)               :: delim
-        type(vec_str_ref), intent(inout)    :: ret
-        type(str_ref)  :: buffer
+        character, target, intent(in)   :: str(:)
+        character, intent(in)           :: delim
+        type(vec_str), intent(inout)    :: ret
+        character, pointer :: p(:)
+        type(astring)  :: buffer
         integer        :: i, j
         !
-        ! print *, str
         j = 1
         do i = 1, size(str)
-            ! print *, i, j
             if (str(i) == delim) then
-                ! print *, i
-                buffer%data => str(j:i - 1)
+                p => str(j:i - 1)
+                call buffer%from_borrow(p)
                 call ret%push(buffer)
                 j = i + 1
             end if
         end do
         !
-        buffer%data => str(j:size(str))
+        p => str(j:size(str))
+        call buffer%from_borrow(p)
         call ret%push(buffer)
     end subroutine
     !
