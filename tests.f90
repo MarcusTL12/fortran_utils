@@ -6,7 +6,8 @@ program main
     use string_util_mod
     use str_ref_mod
     use vec_str_ref_mod
-    use hash_mod
+    use map_int_int_mod
+    use map_str_str_mod
     implicit none
     !
     character(len=10) :: arg
@@ -34,6 +35,8 @@ program main
         call test9()
     case ('10')
         call test10()
+    case ('11')
+        call test11()
     case default
         print *, "not implemented"
     end select
@@ -231,9 +234,65 @@ contains
     subroutine test10()
         implicit none
         !
-        type(astring) :: s
-        s = tostring("Marcus!!")
+        type(map_int_int) :: m
+        integer :: a(5), b(5), i
+        logical :: stat
+        integer, pointer :: k, v
         !
-        print *, hash(s)
+        call m%with_capacity(1)
+        !
+        print *, size(m%meta)
+        !
+        a = (/-1, 2, 3, 7, 100/)
+        b = (/3, 1, 4, 1, 5/)
+        !
+        do i = 1, 5
+            call m%insert(a(i), b(i))
+        end do
+        !
+        print *, size(m%meta)
+        !
+        stat = .false.
+        do while (m%next_kvp(k, v, stat))
+            print *, k, " => ", v
+        end do
+    end subroutine
+    !
+    subroutine test11()
+        implicit none
+        !
+        type(map_str_str) :: m
+        type(astring) :: a, b
+        type(astring), pointer :: k, v
+        logical :: stat
+        !
+        call m%with_capacity(1)
+        !
+        a = tostring("Marcus")
+        b = tostring("Lexander")
+        call m%insert(a, b)
+        !
+        a = tostring("Ylva")
+        b = tostring("Os")
+        call m%insert(a, b)
+        !
+        a = tostring("Sverre")
+        b = tostring("Olsen")
+        call m%insert(a, b)
+        !
+        a = tostring("Bjørnar")
+        b = tostring("Kaarevik")
+        call m%insert(a, b)
+        !
+        stat = .false.
+        do while (m%next_kvp(k, v, stat))
+            call show(k)
+            call show(" -> ")
+            call show(v)
+            print *
+        end do
+        !
+        call show(m%get(tostring("Marcus")))
+        print *
     end subroutine
 end program main

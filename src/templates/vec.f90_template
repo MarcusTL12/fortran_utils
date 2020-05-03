@@ -1,6 +1,6 @@
 ! T_TYPE contained type
 ! T_ALIAS contained type name alias
-! T_MOD defined if C_TYPE if a derived type. This is the module of the type.
+! T_MOD defined if T_TYPE if a derived type. This is the module of the type.
 ! T_VEC defined if you want to override the auto generated name i.e. string
 ! T_HASH defined to derive hash
 
@@ -50,6 +50,7 @@ module MOD_NAME
         logical :: owned = .false.
         TT_TYPE, pointer :: data(:) => null()
     contains
+        private
         final :: F(finalizer)
         procedure, public   :: with_capacity => F(with_capacity)
         procedure, public   :: new => F(new)
@@ -61,6 +62,10 @@ module MOD_NAME
         procedure, public   :: clear => F(clear)
         procedure, public   :: from_borrow => F(from_borrow)
         procedure, public   :: as_slice => F(as_slice)
+        procedure           :: F(eq)
+        generic, public     :: operator(==) => F(eq)
+        procedure           :: F(neq)
+        generic, public     :: operator(/=) => F(neq)
     end type
     !
     public :: size
@@ -85,7 +90,7 @@ module MOD_NAME
     end interface
 #endif
 contains
-    subroutine F(finalizer)(self)
+    subroutine F(finalizer) (self)
         implicit none
         !
         type(VEC), intent(inout) :: self
@@ -100,7 +105,7 @@ contains
         end if
     end subroutine
     !
-    subroutine F(with_capacity)(self, cap)
+    subroutine F(with_capacity) (self, cap)
         implicit none
         !
         class(VEC), intent(inout) :: self
@@ -113,7 +118,7 @@ contains
         self%length = 0
     end subroutine
     !
-    subroutine F(new)(self)
+    subroutine F(new) (self)
         implicit none
         !
         class(VEC), intent(inout) :: self
@@ -121,7 +126,7 @@ contains
         call self%with_capacity(INIT_CAP)
     end subroutine
     !
-    pure integer function F(size)(self)
+    pure integer function F(size) (self)
         implicit none
         !
         type(VEC), intent(in) :: self
@@ -129,7 +134,7 @@ contains
         F(size) = self%length
     end function
     !
-    subroutine F(reallocate)(self)
+    subroutine F(reallocate) (self)
         implicit none
         !
         type(VEC), intent(inout) :: self
@@ -148,21 +153,21 @@ contains
         self%data => ndata
     end subroutine
     !
-    subroutine F(push)(self, val)
+    subroutine F(push) (self, val)
         implicit none
         !
         class(VEC), intent(inout) :: self
         TT_TYPE, intent(inout)   :: val
         !
         if (size(self) >= size(self%data)) then
-            call F(reallocate)(self)
+            call F(reallocate) (self)
         end if
         !
         self%length = self%length + 1
         call transfer(val, self%data(self%length))
     end subroutine
     !
-    function F(at)(self, ind)
+    function F(at) (self, ind)
         implicit none
         !
         class(VEC), intent(inout)   :: self
@@ -172,10 +177,12 @@ contains
         F(at) => self%data(ind)
     end function
     !
-    subroutine F(transfer)(a, b)
+    subroutine F(transfer) (a, b)
         implicit none
         !
         type(VEC), intent(inout) :: a, b
+        !
+        call drop(b)
         !
         b%data => a%data
         b%length = a%length
@@ -184,7 +191,7 @@ contains
         a%owned = .false.
     end subroutine
     !
-    subroutine F(from_vec)(self, other)
+    subroutine F(from_vec) (self, other)
         implicit none
         !
         class(VEC), intent(inout)   :: self
@@ -200,7 +207,7 @@ contains
         end do
     end subroutine
     !
-    subroutine F(from_arr)(self, other)
+    subroutine F(from_arr) (self, other)
         implicit none
         !
         class(VEC), intent(inout)   :: self
@@ -216,7 +223,7 @@ contains
         end do
     end subroutine
     !
-    subroutine F(clear)(self)
+    subroutine F(clear) (self)
         implicit none
         !
         class(VEC), intent(inout) :: self
@@ -229,7 +236,7 @@ contains
         self%length = 0
     end subroutine
     !
-    subroutine F(from_borrow)(self, other)
+    subroutine F(from_borrow) (self, other)
         implicit none
         !
         class(VEC), intent(inout) :: self
@@ -241,17 +248,17 @@ contains
         self%owned = .false.
     end subroutine
     !
-    function F(as_slice)(self)
+    function F(as_slice) (self)
         implicit none
         !
         class(VEC), intent(in) :: self
-        TT_TYPE, pointer :: F(as_slice)(:)
+        TT_TYPE, pointer :: F(as_slice) (:)
         !
         F(as_slice) => self%data(1:size(self))
     end function
     !
 #ifdef T_HASH
-    function F(hash)(self) result(h)
+    function F(hash) (self) result(h)
         implicit none
         !
         class(VEC), intent(in) :: self
@@ -265,6 +272,36 @@ contains
         end do
     end function
 #endif
+    !
+    logical function F(eq) (self, other)
+        implicit none
+        !
+        class(VEC), intent(in) :: self
+        type(VEC), intent(in) :: other
+        integer :: i
+        !
+        if (size(self) /= size(other)) then
+            F(eq) = .false.
+            return
+        end if
+        !
+        F(eq) = .true.
+        do i = 1, size(self)
+            if (self%data(i) /= other%data(i)) then
+                F(eq) = .false.
+                exit
+            end if
+        end do
+    end function
+    !
+    logical function F(neq) (self, other)
+        implicit none
+        !
+        class(VEC), intent(in) :: self
+        type(VEC), intent(in) :: other
+        !
+        F(neq) = .not. (self == other)
+    end function
 end module
 
 #undef T_TYPE

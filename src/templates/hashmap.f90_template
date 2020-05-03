@@ -1,0 +1,371 @@
+! K_TYPE key type
+! K_ALIAS key type name alias
+! K_MOD defined if K_TYPE if a derived type. This is the module of the type
+
+! V_TYPE value type
+! V_ALIAS value type name alias
+! V_MOD defined if V_TYPE if a derived type. This is the module of the type
+
+#include "macros.f90_template"
+
+! name of map type
+#define MAP CAT4(map_,K_ALIAS,_,V_ALIAS)
+
+! name of module
+#define MOD_NAME CAT2(MAP,_mod)
+
+! the thing you use to use K_TYPE
+#ifdef K_MOD
+#define KT_TYPE type(K_TYPE)
+#else
+#define KT_TYPE K_TYPE
+#endif
+
+! the thing you use to use V_TYPE
+#ifdef V_MOD
+#define VT_TYPE type(V_TYPE)
+#else
+#define VT_TYPE V_TYPE
+#endif
+
+! macro for defining unique function/subroutine names
+#define F(f) CAT3(f,_,MAP)
+
+! the default initial capacity of a new map
+#define INIT_CAP 8
+
+! the factor to increase the vec with when reallocating
+#define GROWTH_FACTOR 2
+
+! the amount of bools stored per entry in meta
+! the rest of the byte is the amout of hash collisions at that spot
+! the two bools are:
+! position 0: whether there is something here that came from elsewhere
+! position 1: whether the position is deleted
+! in general:
+! if meta is 0, position is empty
+! if deleted flag is on, the position is empty, but other positions may skip
+! over it to find their existing keys
+! if meta is not empty and deleted flag is zero, there is data on this position
+#define AMT_BOOLS 2
+
+module MOD_NAME
+    use hash_mod
+    use ownership_mod
+    use string_util_mod
+#ifdef K_MOD
+    use K_MOD
+#endif
+#ifdef V_MOD
+    use V_MOD
+#endif
+    !
+    implicit none
+    !
+    private
+    !
+    real, parameter :: fill_threshold = 2.0 / 3
+    !
+    public :: MAP
+    type MAP
+        logical             :: owned = .false.
+        integer             :: length
+        integer(1), pointer :: meta(:)
+        KT_TYPE, pointer    :: keys(:)
+        VT_TYPE, pointer    :: vals(:)
+    contains
+        private
+        final               :: F(finalizer)
+        procedure           :: initialize => F(initialize)
+        procedure, public   :: with_capacity => F(with_capacity)
+        procedure, public   :: new => F(new)
+        procedure           :: hashmod => F(hashmod)
+        procedure           :: key_to_ind => F(key_to_ind)
+        procedure           :: insert_ind => F(insert_ind)
+        procedure, public   :: insert => F(insert)
+        procedure, public   :: get => F(get)
+        procedure, public   :: first_key => F(first_key)
+        procedure, public   :: next_kvp => F(next_kvp)
+        procedure           :: reallocate => F(reallocate)
+    end type
+    !
+    public :: drop
+    interface drop
+        module procedure F(finalizer)
+    end interface
+    !
+    public size
+    interface size
+        module procedure F(size)
+    end interface
+    !
+    public transfer
+    interface transfer
+        module procedure F(transfer)
+    end interface
+contains
+    integer function F(size) (self)
+        implicit none
+        !
+        type(MAP), intent(in) :: self
+        !
+        F(size) = self%length
+    end function
+    !
+    subroutine F(finalizer) (self)
+        implicit none
+        !
+        type(MAP), intent(inout) :: self
+        KT_TYPE, pointer :: k
+        VT_TYPE, pointer :: v
+        integer          :: i
+        !
+        if (self%owned) then
+            do i = 1, size(self%meta)
+                if (self%meta(i) /= 0 .and. iand(self%meta(i), 2) == 0) then
+                    call drop(self%keys(i))
+                    call drop(self%vals(i))
+                end if
+            end do
+            deallocate (self%meta, self%keys, self%vals)
+        end if
+    end subroutine
+    !
+    subroutine F(initialize) (self, cap)
+        implicit none
+        !
+        class(MAP), intent(inout) :: self
+        integer, intent(in)       :: cap
+        integer :: i
+        !
+        self%owned = .true.
+        self%length = 0
+        allocate (self%meta(cap), self%keys(cap), self%vals(cap))
+        !
+        do i = 1, cap
+            self%meta(i) = 0
+        end do
+    end subroutine
+    !
+    subroutine F(with_capacity) (self, cap)
+        implicit none
+        !
+        class(MAP), intent(inout) :: self
+        integer, intent(in)       :: cap
+        integer :: i
+        !
+        call drop(self)
+        !
+        i = cap
+        !
+        do while (i < cap / fill_threshold)
+            i = ishft(i, 1)
+        end do
+        !
+        call self%initialize(i)
+    end subroutine
+    !
+    subroutine F(new) (self)
+        implicit none
+        !
+        class(MAP), intent(inout) :: self
+        !
+        call self%with_capacity(INIT_CAP)
+    end subroutine
+    !
+    function F(hashmod) (self, key) result(hm)
+        implicit none
+        !
+        class(MAP), intent(in) :: self
+        KT_TYPE, intent(in)    :: key
+        integer :: hm
+        !
+        hm = int(modulo(hash(key), size(self%meta)) + 1, 4)
+    end function
+    !
+    subroutine F(key_to_ind) (self, key, ind, status, firstdeleted)
+        implicit none
+        !
+        class(MAP), intent(in)              :: self
+        KT_TYPE, intent(in)                 :: key
+        integer, intent(out)                :: ind
+        logical, intent(inout)              :: status
+        integer, optional, intent(out)      :: firstdeleted
+        integer :: origind, amt, deleted
+        !
+        deleted = 0
+        status = .true.
+        origind = self%hashmod(key)
+        ind = origind
+        amt = ishft(self%meta(ind), -AMT_BOOLS)
+        !
+        if (self%meta(ind) /= 0) then
+            do while (self%keys(ind) /= key .and. amt >= 0)
+               if (iand(self%meta(ind), int(2, 1)) /= 0 .and. deleted == 0) then
+                    deleted = ind
+                end if
+                if (self%meta(ind) == 0) then
+                    status = .false.
+                    exit
+                else if (self%hashmod(self%keys(ind)) == origind) then
+                    amt = amt - 1
+                end if
+                ind = ind + 1
+                if (ind > size(self%meta)) ind = 1
+            end do
+        end if
+        !
+        status = self%meta(ind) /= 0
+        !
+        if (present(firstdeleted)) firstdeleted = deleted
+    end subroutine
+    !
+    subroutine F(insert_ind) (self, key, val, ind)
+        implicit none
+        !
+        class(MAP), intent(inout)   :: self
+        KT_TYPE, intent(inout)      :: key
+        VT_TYPE, intent(inout)      :: val
+        integer, intent(in)         :: ind
+        integer :: h
+        !
+        h = self%hashmod(key)
+        self%meta(h) = self%meta(h) + int(ishft(1, AMT_BOOLS), 1)
+        if (h /= ind) self%meta(ind) = ibset(self%meta(ind), 0)
+        self%meta(ind) = ibclr(self%meta(ind), 1)
+        !
+        call transfer(key, self%keys(ind))
+        call transfer(val, self%vals(ind))
+    end subroutine
+    !
+    function F(get) (self, key) result(r)
+        implicit none
+        !
+        class(MAP), intent(in)  :: self
+        KT_TYPE, intent(in)     :: key
+        VT_TYPE, pointer        :: r
+        integer :: ind
+        logical :: status
+        !
+        call self%key_to_ind(key, ind, status)
+        !
+        r => self%vals(ind)
+    end function
+    !
+    subroutine F(insert) (self, key, val)
+        implicit none
+        !
+        class(MAP), intent(inout)   :: self
+        KT_TYPE, intent(inout)      :: key
+        VT_TYPE, intent(inout)      :: val
+        logical :: status
+        integer :: ind, deleted
+        !
+        call self%key_to_ind(key, ind, status, deleted)
+        !
+        if (status) then
+            call transfer(val, self%vals(ind))
+        else
+            if (deleted /= 0) ind = deleted
+            call self%insert_ind(key, val, ind)
+            self%length = self%length + 1
+            if (size(self) > fill_threshold * size(self%meta)) then
+                call self%reallocate()
+            end if
+        end if
+    end subroutine
+    !
+    function F(first_key) (self) result(key)
+        implicit none
+        !
+        class(MAP), intent(inout)   :: self
+        KT_TYPE, pointer            :: key
+        integer :: i
+        !
+        do i = 1, size(self%meta)
+            if (self%meta(i) /= 0 .and. iand(self%meta(i), 2) == 0) then
+                key => self%keys(i)
+                return
+            end if
+        end do
+    end function
+    !
+    logical function F(next_kvp) (self, key, val, status) result(stat)
+        implicit none
+        !
+        class(MAP), intent(inout)       :: self
+        KT_TYPE, pointer, intent(inout) :: key
+        VT_TYPE, pointer, intent(inout) :: val
+        logical, intent(inout)          :: status
+        integer :: ind, i
+        !
+        if (.not. status) then
+            key => self%first_key()
+            val => self%get(key)
+            status = .true.
+            stat = .true.
+            return
+        end if
+        !
+        call self%key_to_ind(key, ind, status)
+        if (status) then
+            status = .false.
+            do i = ind + 1, size(self%meta)
+                if (self%meta(i) /= 0 .and. iand(self%meta(i), 2) == 0) then
+                    key => self%keys(i)
+                    val => self%vals(i)
+                    status = .true.
+                    exit
+                end if
+            end do
+        end if
+        stat = status
+    end function
+    !
+    subroutine F(transfer) (a, b)
+        implicit none
+        !
+        type(MAP), intent(inout) :: a, b
+        !
+        call drop(b)
+        !
+        b%owned = a%owned
+        b%length = a%length
+        b%meta => a%meta
+        b%keys => a%keys
+        b%vals => a%vals
+        if (a%owned) nullify (a%meta, a%keys, a%vals)
+        a%owned = .false.
+    end subroutine
+    !
+    subroutine F(reallocate) (self)
+        implicit none
+        !
+        class(MAP), intent(inout)   :: self
+        type(MAP)                   :: other
+        KT_TYPE, pointer :: k
+        VT_TYPE, pointer :: v
+        integer          :: i
+        !
+        call other%initialize(size(self%meta) * GROWTH_FACTOR)
+        !
+        do i = 1, size(self%meta)
+            if (self%meta(i) /= 0 .and. iand(self%meta(i), 2) == 0) then
+                self%meta(i) = 0
+                call other%insert(self%keys(i), self%vals(i))
+            end if
+        end do
+        !
+        call transfer(other, self)
+    end subroutine
+end module
+
+#undef K_TYPE
+#undef K_ALIAS
+#undef K_MOD
+#undef KT_TYPE
+
+#undef V_TYPE
+#undef V_ALIAS
+#undef V_MOD
+#undef VT_TYPE
