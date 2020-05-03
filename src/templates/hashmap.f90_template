@@ -116,9 +116,7 @@ contains
         implicit none
         !
         type(MAP), intent(inout) :: self
-        KT_TYPE, pointer :: k
-        VT_TYPE, pointer :: v
-        integer          :: i
+        integer                  :: i
         !
         if (self%owned) then
             do i = 1, size(self%meta)
@@ -343,8 +341,6 @@ contains
         !
         class(MAP), intent(inout)   :: self
         type(MAP)                   :: other
-        KT_TYPE, pointer :: k
-        VT_TYPE, pointer :: v
         integer          :: i
         !
         call other%initialize(size(self%meta) * GROWTH_FACTOR)

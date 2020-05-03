@@ -37,6 +37,8 @@ program main
         call test10()
     case ('11')
         call test11()
+    case ('12')
+        call test12()
     case default
         print *, "not implemented"
     end select
@@ -294,5 +296,52 @@ contains
         !
         call show(m%get(tostring("Marcus")))
         print *
+    end subroutine
+    !
+    subroutine test12()
+        implicit none
+        !
+        type(astring) :: s(8)
+        type(map_str_str) :: m
+        type(astring) :: a, b
+        type(astring), pointer :: k, v
+        logical :: stat
+        !
+        s = (/ &
+            tostring("Marcus"), &
+            tostring("Lexander"), &
+            tostring("Ylva"), &
+            tostring("Os"), &
+            tostring("Sverre"), &
+            tostring("Olsen"), &
+            tostring("Bjørnar"), &
+            tostring("Kaarevik") &
+            /)
+        !
+        call m%with_capacity(1)
+        !
+        call a%from_borrow(s(1)%as_slice())
+        call b%from_borrow(s(2)%as_slice())
+        call m%insert(a, b)
+        !
+        call a%from_borrow(s(3)%as_slice())
+        call b%from_borrow(s(4)%as_slice())
+        call m%insert(a, b)
+        ! !
+        call a%from_borrow(s(5)%as_slice())
+        call b%from_borrow(s(6)%as_slice())
+        call m%insert(a, b)
+        ! !
+        call a%from_borrow(s(7)%as_slice())
+        call b%from_borrow(s(8)%as_slice())
+        call m%insert(a, b)
+        !
+        stat = .false.
+        do while (m%next_kvp(k, v, stat))
+            call show(k)
+            call show(" -> ")
+            call show(v)
+            print *
+        end do
     end subroutine
 end program main
