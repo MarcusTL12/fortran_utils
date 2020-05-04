@@ -6,7 +6,7 @@ module string_util_mod
     !
     private
     !
-    public :: split_with_delim, str_p, str_eq
+    public :: split_with_delim, str_p, str_eq, is_numeric
     !
     public :: show
     interface show
