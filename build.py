@@ -40,7 +40,7 @@ def delete_all_ext(dir, ext):
     for f in os.listdir(dir):
         (root, ext2) = os.path.splitext(f)
         if ext == ext2:
-            os.remove(f)
+            os.remove(os.path.join(dir, f))
 
 
 def copy_all_ext(d2, ext):
@@ -75,8 +75,6 @@ if optimize:
     command.extend(args[2:])
 else:
     command.extend(args[1:])
-
-print(command)
 
 # Running the binary
 t = time()

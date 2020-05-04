@@ -410,15 +410,12 @@ contains
         implicit none
         !
         type(astring) :: a
+        integer :: i
         !
-        call a%new()
+        a = tostring("Hei")
         !
-        call append_str(a, "Heisann!")
-        !
-        call show(a)
-        print *
-        !
-        call a%truncate(3)
+        i = -125
+        call into_string(a, i)
         !
         call show(a)
         print *

@@ -38,6 +38,11 @@ module string_util_mod
         module procedure append_str_str
         module procedure append_str_chars
     end interface
+    !
+    public :: into_string
+    interface into_string
+        module procedure int_to_str
+    end interface
 contains
     subroutine show_astring(s)
         implicit none
@@ -222,5 +227,23 @@ contains
             buff = b(i)
             call a%push(buff)
         end do
+    end subroutine
+    !
+    subroutine int_to_str(s, i)
+        implicit none
+        !
+        type(astring), intent(inout) :: s
+        integer, intent(in) :: i
+        character(len=11)   :: buf
+        integer :: spaces
+        !
+        write (buf, '(I11)') i
+        !
+        spaces = 1
+        do while (buf(spaces:spaces) == ' ')
+            spaces = spaces + 1
+        end do
+        !
+        call append_str(s, buf(spaces:11))
     end subroutine
 end module
