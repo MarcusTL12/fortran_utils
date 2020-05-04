@@ -245,4 +245,21 @@ contains
         end do
         str_begins_with = .true.
     end function
+    !
+    subroutine file_to_lines(filename, lines)
+        implicit none
+        !
+        character(len=*), intent(in) :: filename
+        type(vec_str), intent(inout) :: lines
+        type(astring) :: l1, l2
+        !
+        call l1%new()
+        !
+        open (1, file=filename)
+        do while (readline(1, l1))
+            l2 = l1
+            call lines%push(l2)
+        end do
+        close (1)
+    end subroutine
 end module
