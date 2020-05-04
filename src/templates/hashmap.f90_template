@@ -88,6 +88,7 @@ module MOD_NAME
         procedure, public   :: next_kvp => F(next_kvp)
         procedure           :: reallocate => F(reallocate)
         procedure, public   :: contains_key => F(contains_key)
+        procedure, public   :: clear => F(clear)
     end type
     !
     public :: drop
@@ -365,6 +366,24 @@ contains
         !
         call self%key_to_ind(key, ind, r)
     end function
+    !
+    subroutine F(clear) (self)
+        implicit none
+        !
+        class(MAP), intent(inout) :: self
+        integer :: i
+        !
+        if (self%owned) then
+            do i = 1, size(self%meta)
+                if (self%meta(i) /= 0 .and. iand(self%meta(i), 2) == 0) then
+                    call drop(self%keys(i))
+                    call drop(self%vals(i))
+                end if
+                self%meta(i) = 0
+            end do
+            self%length = 0
+        end if
+    end subroutine
 end module
 
 #undef K_TYPE
