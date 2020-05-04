@@ -413,6 +413,7 @@ contains
         !
         a => str_p("Hade!")
         !
-        print *, a
+        print *, str_eq(a, str_p("Hade!"))
+        print *, str_eq(a, str_p("Hei !"))
     end subroutine
 end program main

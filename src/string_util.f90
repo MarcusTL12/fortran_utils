@@ -6,7 +6,7 @@ module string_util_mod
     !
     private
     !
-    public :: split_with_delim, str_p
+    public :: split_with_delim, str_p, str_eq
     !
     public :: show
     interface show
@@ -255,5 +255,20 @@ contains
         character, pointer :: str_p(:)
         !
         call c_f_pointer(c_loc(s), str_p, [len_trim(s)])
+    end function
+    !
+    pure logical function str_eq(a, b)
+        implicit none
+        !
+        character, intent(in) :: a(:), b(:)
+        integer :: i
+        !
+        str_eq = .false.
+        if (size(a) /= size(b)) return
+        !
+        do i = 1, size(a)
+            if (a(i) /= b(i)) return
+        end do
+        str_eq = .true.
     end function
 end module
