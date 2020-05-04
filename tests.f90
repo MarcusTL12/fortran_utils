@@ -46,6 +46,8 @@ program main
         call test15()
     case ('16')
         call test16()
+    case ('17')
+        call test17()
     case default
         print *, "not implemented"
     end select
@@ -415,5 +417,24 @@ contains
         !
         print *, str_eq(a, str_p("Hade!"))
         print *, str_eq(a, str_p("Hei !"))
+    end subroutine
+    !
+    subroutine test17()
+        implicit none
+        !
+        type(astring) :: a, b
+        character :: c
+        !
+        call a%with_capacity(10)
+        call append_str(a, "Marcus")
+        !
+        call b%from_buffer(a%data, size(a))
+        !
+        c = '!'
+        call b%push(c)
+        print *, size(b%data)
+        !
+        call show(b)
+        print *
     end subroutine
 end program main

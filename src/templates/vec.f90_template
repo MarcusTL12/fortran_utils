@@ -69,6 +69,7 @@ module MOD_NAME
         generic, public     :: assignment(=) => F(from_vec), F(from_arr)
         procedure, public   :: clear => F(clear)
         procedure, public   :: from_borrow => F(from_borrow)
+        procedure, public   :: from_buffer => F(from_buffer)
         procedure, public   :: as_slice => F(as_slice)
         procedure           :: F(eq)
         generic, public     :: operator(==) => F(eq)
@@ -164,7 +165,7 @@ contains
             call transfer(self%data(i), ndata(i))
         end do
         !
-        deallocate (self%data)
+        if (self%owned) deallocate (self%data)
         self%data => ndata
     end subroutine
     !
@@ -172,7 +173,9 @@ contains
         implicit none
         !
         class(VEC), intent(inout) :: self
-        TT_TYPE, intent(inout)   :: val
+        TT_TYPE, intent(inout)    :: val
+        !
+        ! print *, size(self), size(self%data)
         !
         if (size(self) >= size(self%data)) then
             call F(reallocate) (self)
@@ -260,6 +263,19 @@ contains
         call drop(self)
         self%data => other
         self%length = size(other)
+        self%owned = .false.
+    end subroutine
+    !
+    subroutine F(from_buffer) (self, buffer, length)
+        implicit none
+        !
+        class(VEC), intent(inout) :: self
+        TT_TYPE, pointer, intent(in) :: buffer(:)
+        integer, intent(in) :: length
+        !
+        call drop(self)
+        self%data => buffer
+        self%length = length
         self%owned = .false.
     end subroutine
     !
