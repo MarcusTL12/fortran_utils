@@ -251,7 +251,7 @@ contains
         use iso_c_binding
         implicit none
         !
-        character(len=*), target, intent(in) :: s
+        character(len=*), target, intent(inout) :: s
         character, pointer :: str_p(:)
         !
         call c_f_pointer(c_loc(s), str_p, [len_trim(s)])

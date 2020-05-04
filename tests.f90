@@ -409,15 +409,11 @@ contains
     subroutine test16()
         implicit none
         !
-        type(astring) :: a
-        integer :: i
+        character(len=3), target :: a = "Hei"
+        character, pointer :: b(:)
         !
-        a = tostring("Hei")
+        b => str_p(a)
         !
-        i = -125
-        call into_string(a, i)
-        !
-        call show(a)
-        print *
+        print *, b
     end subroutine
 end program main
