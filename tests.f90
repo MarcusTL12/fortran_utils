@@ -409,11 +409,10 @@ contains
     subroutine test16()
         implicit none
         !
-        character(len=3), target :: a = "Hei"
-        character, pointer :: b(:)
+        character, pointer :: a(:)
         !
-        b => str_p(a)
+        a => str_p("Hade!")
         !
-        print *, b
+        print *, a
     end subroutine
 end program main
