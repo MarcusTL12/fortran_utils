@@ -271,4 +271,14 @@ contains
         end do
         str_eq = .true.
     end function
+    !
+    pure logical function is_numeric(c)
+        implicit none
+        !
+        character, intent(in) :: c
+        integer(1) :: b
+        !
+        b = transfer(c, b)
+        is_numeric = b >= 48 .and. b <= 57
+    end function
 end module
