@@ -12,7 +12,7 @@ mod_cpy_dirs = [
 ]
 
 if len(args) >= 2:
-    optimize = args[1] == "O"
+    optimize = args[1] == "-O"
 else:
     optimize = False
 
