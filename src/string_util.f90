@@ -259,6 +259,7 @@ contains
         open (1, file=filename)
         do while (readline(1, l1))
             l2 = l1
+            call l1%clear()
             call lines%push(l2)
         end do
         close (1)
