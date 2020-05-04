@@ -6,7 +6,8 @@ module string_util_mod
     !
     private
     !
-    public :: split_with_delim, str_p, str_eq, is_numeric, str_begins_with
+    public :: split_with_delim, str_p, str_eq, is_numeric, str_begins_with, &
+              file_to_lines
     !
     public :: tostring
     interface tostring
