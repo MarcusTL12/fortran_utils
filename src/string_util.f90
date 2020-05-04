@@ -14,6 +14,11 @@ module string_util_mod
         module procedure tostring_chars
     end interface
     !
+    public :: tostring_ref
+    interface tostring_ref
+        module procedure str_p_to_astring_ref
+    end interface
+    !
     public :: readline
     interface readline
         module procedure readline_to_string
@@ -225,6 +230,15 @@ contains
             if (a(i) /= b(i)) return
         end do
         str_eq = .true.
+    end function
+    !
+    function str_p_to_astring_ref(s) result(as)
+        implicit none
+        !
+        character, target, intent(in) :: s(:)
+        type(astring) :: as
+        !
+        call as%from_borrow(s)
     end function
     !
     pure logical function is_char_numeric(c)
