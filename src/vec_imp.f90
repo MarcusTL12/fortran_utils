@@ -21,14 +21,6 @@
 #include "templates/vec.f90_template"
 
 
-! #define T_TYPE str_ref
-! #define T_ALIAS str_ref
-! #define T_MOD str_ref_mod
-! #define T_HASH
-
-! #include "templates/vec.f90_template"
-
-
 #define T_TYPE vec_int
 #define T_ALIAS vec_int
 #define T_MOD vec_int_mod

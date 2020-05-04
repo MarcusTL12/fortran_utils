@@ -6,6 +6,7 @@ program main
     use string_util_mod
     use map_int_int_mod
     use map_str_str_mod
+    use md5_mod
     implicit none
     !
     character(len=10) :: arg
@@ -39,6 +40,10 @@ program main
         call test12()
     case ('13')
         call test13()
+    case ('14')
+        call test14()
+    case ('15')
+        call test15()
     case default
         print *, "not implemented"
     end select
@@ -349,30 +354,53 @@ contains
     end subroutine
     !
     subroutine test13()
+        use iso_c_binding
         implicit none
         !
-        type(astring) :: s
+        integer, target :: a
+        integer(1), pointer :: bytes(:)
+        type(c_ptr) :: cptr
         !
-        s = tostring("Marcus,Takvam,Lexander")
+        a = 16909060
+        cptr = c_loc(a)
+        call c_f_pointer(cptr, bytes, [4])
         !
-        call tmp(s%as_slice())
+        bytes(2) = 13
+        !
+        print *, a
     end subroutine
     !
-    subroutine tmp(s)
+    subroutine test14()
+        use iso_c_binding
         implicit none
         !
-        character, target, intent(in)   :: s(:)
-        character, pointer :: a(:)
-        type(astring) :: b
+        integer(1), target :: bytes(4)
+        integer, pointer :: a
+        type(c_ptr) :: cptr
         !
-        a => s(1 : 6)
-        call b%from_borrow(a)
-        call show(b)
-        print *
+        bytes = (/int(4, 1), int(3, 1), int(2, 1), int(1, 1)/)
         !
-        a => s(8 : 13)
-        call b%from_borrow(a)
-        call show(b)
-        print *
+        cptr = c_loc(bytes)
+        !
+        call c_f_pointer(cptr, a)
+        !
+        print *, a
+    end subroutine
+    !
+    subroutine test15()
+        implicit none
+        !
+        type(astring) :: a
+        !
+        a = tostring("The quick brown fox jumps over the lazy dog"// &
+                     "The quick brown fox jumps over the lazy dog"// &
+                     "The quick brown fox jumps over the lazy dog"// &
+                     "The quick brown fox jumps over the lazy dog"// &
+                     "The quick brown fox jumps over the lazy dog"// &
+                     "The quick brown fox jumps over the lazy dog"// &
+                     "The quick brown fox jumps over the lazy dog"// &
+                     "The quick brown fox jumps over the lazy dog")
+        !
+        print *, md5_to_hex(md5(a%as_slice()))
     end subroutine
 end program main
