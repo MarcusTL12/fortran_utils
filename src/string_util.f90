@@ -281,4 +281,20 @@ contains
         b = transfer(c, b)
         is_numeric = b >= 48 .and. b <= 57
     end function
+    !
+    pure logical function str_begins_with(a, b)
+        implicit none
+        !
+        character, intent(in) :: a(:), b(:)
+        integer :: i
+        !
+        str_begins_with = .false.
+        !
+        if (size(a) < size(b)) return
+        !
+        do i = 1, size(b)
+            if (a(i) /= b(i)) return
+        end do
+        str_begins_with = .true.
+    end function
 end module
