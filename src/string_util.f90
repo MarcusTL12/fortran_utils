@@ -4,6 +4,11 @@ module string_util_mod
     !
     implicit none
     !
+    private
+    !
+    public :: split_with_delim
+    !
+    public :: show
     interface show
         module procedure show_astring
         module procedure show_chars
@@ -11,18 +16,27 @@ module string_util_mod
         module procedure show_int
     end interface
     !
+    public :: tostring
     interface tostring
         module procedure tostring_chars
     end interface
     !
+    public :: readline
     interface readline
         module procedure readline_to_string
     end interface
     !
+    public :: parse_int
     interface parse_int
         module procedure str_slice_to_int
         module procedure str_to_int
         module procedure chars_to_int
+    end interface
+    !
+    public :: append_str
+    interface append_str
+        module procedure append_str_str
+        module procedure append_str_chars
     end interface
 contains
     subroutine show_astring(s)
@@ -181,4 +195,32 @@ contains
         !
         read (s, *) chars_to_int
     end function
+    !
+    subroutine append_str_str(a, b)
+        implicit none
+        !
+        type(astring), intent(inout) :: a
+        character(len=*), intent(in) :: b
+        character :: buff
+        integer :: i
+        !
+        do i = 1, len_trim(b)
+            buff = b(i:i)
+            call a%push(buff)
+        end do
+    end subroutine
+    !
+    subroutine append_str_chars(a, b)
+        implicit none
+        !
+        type(astring), intent(inout) :: a
+        character, intent(in) :: b(:)
+        character :: buff
+        integer :: i
+        !
+        do i = 1, size(b)
+            buff = b(i)
+            call a%push(buff)
+        end do
+    end subroutine
 end module

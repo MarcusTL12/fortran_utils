@@ -66,6 +66,7 @@ module MOD_NAME
         generic, public     :: operator(==) => F(eq)
         procedure           :: F(neq)
         generic, public     :: operator(/=) => F(neq)
+        procedure, public   :: truncate => F(truncate)
     end type
     !
     public :: size
@@ -302,6 +303,20 @@ contains
         !
         F(neq) = .not. (self == other)
     end function
+    !
+    subroutine F(truncate) (self, nlen)
+        implicit none
+        !
+        class(VEC), intent(inout) :: self
+        integer, intent(in) :: nlen
+        integer :: i
+        !
+        do i = nlen + 1, size(self)
+            call drop(self%data(i))
+        end do
+        !
+        self%length = nlen
+    end subroutine
 end module
 
 #undef T_TYPE

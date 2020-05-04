@@ -44,6 +44,8 @@ program main
         call test14()
     case ('15')
         call test15()
+    case ('16')
+        call test16()
     case default
         print *, "not implemented"
     end select
@@ -402,5 +404,23 @@ contains
                      "The quick brown fox jumps over the lazy dog")
         !
         print *, md5_to_hex(md5(a%as_slice()))
+    end subroutine
+    !
+    subroutine test16()
+        implicit none
+        !
+        type(astring) :: a
+        !
+        call a%new()
+        !
+        call append_str(a, "Heisann!")
+        !
+        call show(a)
+        print *
+        !
+        call a%truncate(3)
+        !
+        call show(a)
+        print *
     end subroutine
 end program main
