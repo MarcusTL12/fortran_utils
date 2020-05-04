@@ -191,7 +191,7 @@ contains
     function F(at) (self, ind)
         implicit none
         !
-        class(VEC), intent(inout)   :: self
+        class(VEC), intent(in)   :: self
         integer, intent(in)         :: ind
         TT_TYPE, pointer            :: F(at)
         !

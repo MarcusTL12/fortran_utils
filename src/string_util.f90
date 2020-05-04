@@ -6,7 +6,7 @@ module string_util_mod
     !
     private
     !
-    public :: split_with_delim, str_p, str_eq, is_numeric, str_begins_with, &
+    public :: split_with_delim, str_p, str_eq, str_begins_with, &
               file_to_lines
     !
     public :: tostring
@@ -35,6 +35,12 @@ module string_util_mod
     public :: into_string
     interface into_string
         module procedure int_to_str
+    end interface
+    !
+    public :: is_numeric
+    interface is_numeric
+        module procedure is_char_numeric
+        module procedure is_str_numeric
     end interface
 contains
     subroutine show_astring(s)
@@ -221,14 +227,30 @@ contains
         str_eq = .true.
     end function
     !
-    pure logical function is_numeric(c)
+    pure logical function is_char_numeric(c)
         implicit none
         !
         character, intent(in) :: c
         integer(1) :: b
         !
         b = transfer(c, b)
-        is_numeric = b >= 48 .and. b <= 57
+        is_char_numeric = b >= 48 .and. b <= 57
+    end function
+    !
+    pure logical function is_str_numeric(s)
+        implicit none
+        !
+        character, intent(in) :: s(:)
+        integer :: i
+        !
+        do i = 1, size(s)
+            if (i == 1 .and. s(1) == '-') cycle
+            if (.not. is_numeric(s(i))) then
+                is_str_numeric = .false.
+                return
+            end if
+        end do
+        is_str_numeric = .true.
     end function
     !
     pure logical function str_begins_with(a, b)
