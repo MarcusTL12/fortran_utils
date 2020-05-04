@@ -8,14 +8,6 @@ module string_util_mod
     !
     public :: split_with_delim, str_p, str_eq, is_numeric, str_begins_with
     !
-    public :: show
-    interface show
-        module procedure show_astring
-        module procedure show_chars
-        module procedure show_vec_str
-        module procedure show_int
-    end interface
-    !
     public :: tostring
     interface tostring
         module procedure tostring_chars
@@ -53,50 +45,6 @@ contains
         do i = 1, size(s)
             write (*, '(A)', advance='no') s%data(i)
         end do
-    end subroutine
-    !
-    subroutine show_chars(s)
-        implicit none
-        !
-        character(len=*), intent(in) :: s
-        integer :: i
-        !
-        do i = 1, len(s)
-            write (*, '(A)', advance='no') s(i:i)
-        end do
-    end subroutine
-    !
-    subroutine show_vec_str(v)
-        implicit none
-        !
-        type(vec_str), intent(in) :: v
-        integer :: i
-        !
-        call show('['//new_line('A'))
-        !
-        do i = 1, size(v)
-            call show('    "')
-            call show(v%data(i))
-            call show('"'//new_line('A'))
-        end do
-        !
-        call show(']')
-    end subroutine
-    !
-    subroutine show_int(i)
-        implicit none
-        !
-        integer, intent(in) :: i
-        character(len=20)   :: buf
-        integer :: j
-        !
-        write (buf, '(I20)') i
-        !
-        j = 1
-        do while (buf(j:j) == ' ')
-            j = j + 1
-        end do
-        call show(buf(j:20))
     end subroutine
     !
     function tostring_chars(c) result(s)

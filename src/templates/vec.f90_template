@@ -3,6 +3,8 @@
 ! T_MOD defined if T_TYPE if a derived type. This is the module of the type.
 ! T_VEC defined if you want to override the auto generated name i.e. string
 ! T_HASH defined to derive hash
+! T_SHOW defined to derive show
+! T_SHOW_MOD defined if show is implemented elsewhere from the definition of T
 
 #include "macros.f90_template"
 
@@ -38,6 +40,12 @@ module MOD_NAME
 #endif
 #ifdef T_HASH
     use hash_mod
+#endif
+#ifdef T_SHOW
+    use show_mod
+#endif
+#ifdef T_SHOW_MOD
+    use T_SHOW_MOD
 #endif
     use ownership_mod
     implicit none
@@ -88,6 +96,12 @@ module MOD_NAME
     public :: hash
     interface hash
         module procedure F(hash)
+    end interface
+#endif
+#ifdef T_SHOW
+    public :: show
+    interface show
+        module procedure F(show)
     end interface
 #endif
 contains
@@ -317,6 +331,21 @@ contains
         !
         self%length = nlen
     end subroutine
+#ifdef T_SHOW
+    subroutine F(show) (v)
+        implicit none
+        !
+        type(VEC), intent(in) :: v
+        integer :: i
+        !
+        call show('[')
+        do i = 1, size(v)
+            call show(v%data(i))
+            if (i < size(v)) call show(", ")
+        end do
+        call show(']')
+    end subroutine
+#endif
 end module
 
 #undef T_TYPE
@@ -326,3 +355,4 @@ end module
 #undef T_VEC
 #undef VEC
 #undef T_HASH
+#undef T_SHOW

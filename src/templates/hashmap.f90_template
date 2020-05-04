@@ -1,10 +1,14 @@
 ! K_TYPE key type
 ! K_ALIAS key type name alias
 ! K_MOD defined if K_TYPE if a derived type. This is the module of the type
+! K_SHOW_MOD
 
 ! V_TYPE value type
 ! V_ALIAS value type name alias
 ! V_MOD defined if V_TYPE if a derived type. This is the module of the type
+! V_SHOW_MOD
+
+! M_SHOW defined to derive show
 
 #include "macros.f90_template"
 
@@ -59,6 +63,15 @@ module MOD_NAME
 #ifdef V_MOD
     use V_MOD
 #endif
+#ifdef M_SHOW
+    use show_mod
+#ifdef K_SHOW_MOD
+    use K_SHOW_MOD
+#endif
+#ifdef V_SHOW_MOD
+    use V_SHOW_MOD
+#endif
+#endif
     !
     implicit none
     !
@@ -105,6 +118,12 @@ module MOD_NAME
     interface transfer
         module procedure F(transfer)
     end interface
+#ifdef M_SHOW
+    public :: show
+    interface show
+        module procedure F(show)
+    end interface
+#endif
 contains
     integer function F(size) (self)
         implicit none
@@ -384,14 +403,40 @@ contains
             self%length = 0
         end if
     end subroutine
+#ifdef M_SHOW
+    subroutine F(show) (m)
+        implicit none
+        !
+        type(MAP), intent(inout) :: m
+        KT_TYPE, pointer :: k
+        VT_TYPE, pointer :: v
+        logical :: stat, first
+        !
+        call show('{')
+        stat = .false.
+        first = .true.
+        do while (m%next_kvp(k, v, stat))
+            if (.not. first) call show(", ")
+            first = .false.
+            call show(k)
+            call show(" => ")
+            call show(v)
+        end do
+        call show('}')
+    end subroutine
+#endif
 end module
 
 #undef K_TYPE
 #undef K_ALIAS
 #undef K_MOD
 #undef KT_TYPE
+#undef K_SHOW_MOD
 
 #undef V_TYPE
 #undef V_ALIAS
 #undef V_MOD
 #undef VT_TYPE
+#undef V_SHOW_MOD
+
+#undef M_SHOW

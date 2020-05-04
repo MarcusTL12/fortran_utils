@@ -194,7 +194,6 @@ contains
         !
         type(astring) :: s
         type(vec_str) :: v
-        integer :: i
         !
         s = tostring("Marcus,Takvam,Lexander")
         !
@@ -202,10 +201,8 @@ contains
         !
         call split_with_delim(s%as_slice(), ',', v)
         !
-        do i = 1, size(v)
-            call show(v%at(i))
-            print *
-        end do
+        call show(v)
+        print *
     end subroutine
     !
     subroutine test8()
@@ -296,10 +293,13 @@ contains
         stat = .false.
         do while (m%next_kvp(k, v, stat))
             call show(k)
-            call show(" -> ")
+            call show(" => ")
             call show(v)
             print *
         end do
+        !
+        call show(m)
+        print *
         !
         call show(m%get(tostring("Marcus")))
         print *
