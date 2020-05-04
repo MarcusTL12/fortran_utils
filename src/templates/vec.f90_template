@@ -69,7 +69,10 @@ module MOD_NAME
         generic, public     :: assignment(=) => F(from_vec), F(from_arr)
         procedure, public   :: clear => F(clear)
         procedure, public   :: from_borrow => F(from_borrow)
-        procedure, public   :: from_buffer => F(from_buffer)
+        procedure           :: F(from_buffer)
+        procedure           :: F(from_empty_buffer)
+        generic, public     :: from_buffer => F(from_buffer), &
+            F(from_empty_buffer)
         procedure, public   :: as_slice => F(as_slice)
         procedure           :: F(eq)
         generic, public     :: operator(==) => F(eq)
@@ -276,6 +279,18 @@ contains
         call drop(self)
         self%data => buffer
         self%length = length
+        self%owned = .false.
+    end subroutine
+    !
+    subroutine F(from_empty_buffer) (self, buffer)
+        implicit none
+        !
+        class(VEC), intent(inout) :: self
+        TT_TYPE, pointer, intent(in) :: buffer(:)
+        !
+        call drop(self)
+        self%data => buffer
+        self%length = 0
         self%owned = .false.
     end subroutine
     !
