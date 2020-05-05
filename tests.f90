@@ -7,6 +7,7 @@ program main
     use map_int_int_mod
     use map_str_str_mod
     use md5_mod
+    use math_util_mod
     implicit none
     !
     character(len=10) :: arg
@@ -48,6 +49,8 @@ program main
         call test16()
     case ('17')
         call test17()
+    case ('18')
+        call test18()
     case default
         print *, "not implemented"
     end select
@@ -436,5 +439,22 @@ contains
         !
         call show(b)
         print *
+    end subroutine
+    !
+    subroutine test18()
+        implicit none
+        !
+        integer :: a(4), b(3)
+        logical :: u(4), s
+        !
+        u = .false.
+        b = 0
+        !
+        s = .true.
+        do while (s)
+            s = next_permutation(a, b, u)
+            print *, a
+        end do
+        !
     end subroutine
 end program main
