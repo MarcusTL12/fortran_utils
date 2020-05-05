@@ -8,6 +8,7 @@ module show_mod
         module procedure show_chars
         module procedure show_int
         module procedure show_char_p
+        module procedure show_int8
     end interface
 contains
     subroutine show_chars(s)
@@ -46,5 +47,13 @@ contains
             j = j + 1
         end do
         call show(buf(j:20))
+    end subroutine
+    !
+    subroutine show_int8(i)
+        implicit none
+        !
+        integer(1), intent(in) :: i
+        !
+        call show(int(i, 4))
     end subroutine
 end module

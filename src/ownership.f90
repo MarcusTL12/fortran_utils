@@ -14,6 +14,7 @@ module ownership_mod
     interface drop
         module procedure drop_int
         module procedure drop_char
+        module procedure drop_int8
     end interface
 contains
     subroutine transfer_int(a, b)
@@ -44,6 +45,13 @@ contains
         implicit none
         !
         integer, intent(inout) :: a
+        a = a
+    end subroutine
+    !
+    subroutine drop_int8(a)
+        implicit none
+        !
+        integer(1), intent(inout) :: a
         a = a
     end subroutine
     !

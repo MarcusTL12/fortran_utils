@@ -9,6 +9,7 @@ module hash_mod
     public :: hash
     interface hash
         module procedure hash_int
+        module procedure hash_int8
         module procedure hash_int_arr
         module procedure hash_char
         module procedure hash_str
@@ -29,6 +30,16 @@ contains
         implicit none
         !
         integer, intent(in) :: a
+        integer(8)          :: h
+        !
+        h = seed
+        call fuse_hash(int(a, 8), h)
+    end function
+    !
+    function hash_int8(a) result(h)
+        implicit none
+        !
+        integer(1), intent(in) :: a
         integer(8)          :: h
         !
         h = seed

@@ -23,3 +23,11 @@
 #define T_SHOW
 
 #include "templates/vec.f90_template"
+
+
+#define T_TYPE integer(1)
+#define T_ALIAS int8
+#define T_HASH
+#define T_SHOW
+
+#include "templates/vec.f90_template"
