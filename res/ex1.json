@@ -1,0 +1,17 @@
+{
+    "a": 123,
+    "b": 3.14,
+    "c": 6.11e-32,
+    "d": null,
+    "e": "This is a string",
+    "f": [
+        "This is inside a string",
+        314,
+        5.972e24
+    ],
+    "g": {
+        "a": "Another map",
+        "b": 271,
+        "c": 1.68
+    }
+}

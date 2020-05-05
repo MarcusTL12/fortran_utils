@@ -51,6 +51,10 @@ program main
         call test17()
     case ('18')
         call test18()
+    case ('19')
+        call test19()
+    case ('20')
+        call test20()
     case default
         print *, "not implemented"
     end select
@@ -456,5 +460,39 @@ contains
             print *, a
         end do
         !
+    end subroutine
+    !
+    subroutine test19()
+        use iso_c_binding
+        implicit none
+        !
+        type(c_ptr) :: p(2)
+        type(astring), target :: s
+        type(astring), pointer :: q
+        integer, target :: a
+        integer, pointer :: b
+        !
+        p(1) = c_loc(s)
+        p(2) = c_loc(a)
+        !
+        call c_f_pointer(p(1), q)
+        call c_f_pointer(p(2), b)
+        !
+        q = str_p("Marcus")
+        b = 314
+        !
+        call show(s)
+        print *
+        !
+        print *, a
+    end subroutine
+    !
+    subroutine test20()
+        implicit none
+        !
+        character(len=8) :: s = "6.11e-32"
+        character(len=8) :: s2 = "Heisann!"
+        !
+        print *, is_str_real(str_p(s)), is_str_real(str_p(s2))
     end subroutine
 end program main
