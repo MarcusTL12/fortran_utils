@@ -102,7 +102,7 @@ contains
         ! md5_trunc = transfer(h(1:8), md5_trunc)
         !
         k = 1
-        md5_trunc = seed
+        md5_trunc = seed * size(x)
         do i = 1, size(x)
             md5_trunc = md5_trunc * seed + x(i)
             do j = 1, 8
