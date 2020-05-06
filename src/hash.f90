@@ -44,10 +44,16 @@ contains
         !
         integer(1), intent(in) :: x(:)
         integer(8) :: md5_trunc
-        integer(1) :: h(16)
+        ! integer(1) :: h(16)
+        integer :: i
         !
-        h = md5(x)
-        md5_trunc = transfer(h(1:8), md5_trunc)
+        ! h = md5(x)
+        ! md5_trunc = transfer(h(1:8), md5_trunc)
+        !
+        md5_trunc = seed
+        do i = 1, size(x)
+            md5_trunc = md5_trunc * seed + x(i)
+        end do
     end function
     !
     function hash_int(a) result(h)
