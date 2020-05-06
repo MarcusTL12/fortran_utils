@@ -9,6 +9,8 @@ module show_mod
         module procedure show_int
         module procedure show_char_p
         module procedure show_int8
+        module procedure show_logical
+        module procedure show_real
     end interface
 contains
     subroutine show_chars(s)
@@ -46,7 +48,23 @@ contains
         do while (buf(j:j) == ' ')
             j = j + 1
         end do
-        call show(buf(j:20))
+        call show(buf(j:))
+    end subroutine
+    !
+    subroutine show_real(i)
+        implicit none
+        !
+        real, intent(in) :: i
+        character(len=50)   :: buf
+        integer :: j
+        !
+        write (buf, '(ES10.2)') i
+        !
+        j = 1
+        do while (buf(j:j) == ' ')
+            j = j + 1
+        end do
+        call show(trim(buf(j:)))
     end subroutine
     !
     subroutine show_int8(i)
@@ -55,5 +73,17 @@ contains
         integer(1), intent(in) :: i
         !
         call show(int(i, 4))
+    end subroutine
+    !
+    subroutine show_logical(b)
+        implicit none
+        !
+        logical, intent(in) :: b
+        !
+        if (b) then
+            call show("true")
+        else
+            call show("false")
+        end if
     end subroutine
 end module

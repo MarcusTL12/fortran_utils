@@ -7,7 +7,7 @@ module string_util_mod
     private
     !
     public :: split_with_delim, str_p, str_eq, str_begins_with, &
-              file_to_lines, is_str_real
+              file_to_lines, is_str_real, parse_real
     !
     public :: tostring
     interface tostring
@@ -286,6 +286,22 @@ contains
         is_str_real = .true.
         return
 7       is_str_real = .false.
+    end function
+    !
+    real function parse_real(s)
+        implicit none
+        !
+        character, intent(in) :: s(:)
+        character(len=100) :: buffer
+        integer :: i
+        !
+        buffer = ""
+        !
+        do i = 1, size(s)
+            buffer(i:i) = s(i)
+        end do
+        !
+        read (buffer, '(F40.40)') parse_real
     end function
     !
     pure logical function str_begins_with(a, b)

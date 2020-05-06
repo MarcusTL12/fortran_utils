@@ -5,6 +5,7 @@
 ! T_HASH defined to derive hash
 ! T_SHOW defined to derive show
 ! T_SHOW_MOD defined if show is implemented elsewhere from the definition of T
+! T_DISABLE_EQ defined if contained type does not implement eq/neq
 
 #include "macros.f90_template"
 
@@ -74,10 +75,12 @@ module MOD_NAME
         generic, public     :: from_buffer => F(from_buffer), &
             F(from_empty_buffer)
         procedure, public   :: as_slice => F(as_slice)
+#ifndef T_DISABLE_EQ
         procedure           :: F(eq)
         generic, public     :: operator(==) => F(eq)
         procedure           :: F(neq)
         generic, public     :: operator(/=) => F(neq)
+#endif
         procedure, public   :: truncate => F(truncate)
     end type
     !
@@ -311,7 +314,7 @@ contains
         integer(8) :: h
         integer    :: i
         !
-        h = seed
+        h = transfer((/-1748475402, 1824152677/), h)
         !
         do i = 1, size(self)
             call fuse_hash(hash(self%data(i)), h)
@@ -319,6 +322,7 @@ contains
     end function
 #endif
     !
+#ifndef T_DISABLE_EQ
     logical function F(eq) (self, other)
         implicit none
         !
@@ -348,6 +352,7 @@ contains
         !
         F(neq) = .not. (self == other)
     end function
+#endif
     !
     subroutine F(truncate) (self, nlen)
         implicit none
@@ -387,3 +392,4 @@ end module
 #undef VEC
 #undef T_HASH
 #undef T_SHOW
+#undef T_DISABLE_EQ

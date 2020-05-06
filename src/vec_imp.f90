@@ -31,3 +31,11 @@
 #define T_SHOW
 
 #include "templates/vec.f90_template"
+
+
+#define T_TYPE c_ptr
+#define T_ALIAS cptr
+#define T_MOD iso_c_binding
+#define T_DISABLE_EQ
+
+#include "templates/vec.f90_template"

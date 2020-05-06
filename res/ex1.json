@@ -2,16 +2,21 @@
     "a": 123,
     "b": 3.14,
     "c": 6.11e-32,
+    "c.1": true,
+    "c.2": false,
     "d": null,
     "e": "This is a string",
     "f": [
-        "This is inside a string",
+        "This is inside an array",
         314,
-        5.972e24
+        5.972e24,
+        {}
     ],
     "g": {
         "a": "Another map",
         "b": 271,
-        "c": 1.68
-    }
+        "c": 1.68,
+        "d": []
+    },
+    "h": "This is after the map"
 }

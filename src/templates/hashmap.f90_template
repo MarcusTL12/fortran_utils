@@ -318,6 +318,11 @@ contains
         logical, intent(inout)          :: status
         integer :: ind, i
         !
+        if (size(self) == 0) then
+            stat = .false.
+            return
+        end if
+        !
         if (.not. status) then
             key => self%first_key()
             val => self%get(key)

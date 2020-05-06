@@ -8,6 +8,8 @@ program main
     use map_str_str_mod
     use md5_mod
     use math_util_mod
+    use json_mod
+    use map_str_cptr_mod
     implicit none
     !
     character(len=10) :: arg
@@ -55,6 +57,8 @@ program main
         call test19()
     case ('20')
         call test20()
+    case ('21')
+        call test21()
     case default
         print *, "not implemented"
     end select
@@ -488,11 +492,33 @@ contains
     end subroutine
     !
     subroutine test20()
+        use iso_c_binding
         implicit none
         !
-        character(len=8) :: s = "6.11e-32"
-        character(len=8) :: s2 = "Heisann!"
+        type(json_obj) :: j
+        type(map_str_cptr), pointer :: m
         !
-        print *, is_str_real(str_p(s)), is_str_real(str_p(s2))
+        j = parse_json_file("res/ex1.json")
+        !
+        call show(j)
+        print *
+        !
+        call c_f_pointer(j%data, m)
+        !
+        print *, m%meta
+    end subroutine
+    !
+    subroutine test21()
+        implicit none
+        !
+        type(astring) :: s
+        !
+        s = str_p("ab.")
+        !
+        print *, modulo(hash(s), 16)
+        !
+        s = str_p("AB.")
+        !
+        print *, modulo(hash(s), 16)
     end subroutine
 end program main
