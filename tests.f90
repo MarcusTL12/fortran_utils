@@ -498,7 +498,7 @@ contains
         type(json_obj) :: j
         type(map_str_cptr), pointer :: m
         !
-        j = parse_json_file("res/ex3.json")
+        j = parse_json_file("res/ex1.json")
         !
         call show(j)
         print *
