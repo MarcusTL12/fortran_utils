@@ -3,7 +3,7 @@ module math_util_mod
     !
     private
     !
-    public :: next_permutation
+    public :: next_permutation, clamp
     !
     public :: inc
     interface inc
@@ -62,5 +62,13 @@ contains
                 if (.not. u(i)) p(size(p)) = i
             end do
         end subroutine
+    end function
+    !
+    pure integer function clamp(n, l, h)
+        implicit none
+        !
+        integer, intent(in) :: n, l, h
+        !
+        clamp = min(max(n, l), h)
     end function
 end module
