@@ -1,0 +1,332 @@
+{
+    "e": {
+        "a": {
+            "e": -39,
+            "c": 119,
+            "a": {
+                "c": 65,
+                "a": "orange",
+                "b": "green",
+                "d": "orange"
+            },
+            "g": "violet",
+            "b": {
+                "e": 6,
+                "c": {
+                    "c": "violet",
+                    "a": 8,
+                    "b": [
+                        "red",
+                        {
+                            "a": 37
+                        },
+                        "green",
+                        84,
+                        "yellow",
+                        "green",
+                        [
+                            24,
+                            45,
+                            "blue",
+                            "blue",
+                            56,
+                            "yellow"
+                        ],
+                        "orange"
+                    ]
+                },
+                "a": "violet",
+                "b": {
+                    "a": 85
+                },
+                "d": [
+                    109,
+                    66,
+                    [
+                        "yellow",
+                        "violet",
+                        21,
+                        -30
+                    ],
+                    "violet",
+                    "blue",
+                    -43,
+                    {
+                        "e": "violet",
+                        "c": "red",
+                        "a": "blue",
+                        "b": -22,
+                        "d": [
+                            71,
+                            "red",
+                            30,
+                            "violet",
+                            "red",
+                            26,
+                            120
+                        ],
+                        "f": [
+                            "red"
+                        ]
+                    },
+                    "red"
+                ]
+            },
+            "d": {
+                "e": "violet",
+                "a": "blue",
+                "d": "blue",
+                "c": "blue",
+                "h": "orange",
+                "b": {
+                    "e": "red",
+                    "a": {
+                        "c": 115,
+                        "a": 137,
+                        "b": "green"
+                    },
+                    "d": -25,
+                    "c": "blue",
+                    "h": {
+                        "a": 161,
+                        "b": [
+                            "yellow",
+                            56,
+                            129,
+                            -31,
+                            "yellow",
+                            "red",
+                            "green",
+                            105,
+                            "orange",
+                            130
+                        ]
+                    },
+                    "b": 142,
+                    "g": 194,
+                    "f": 122,
+                    "i": -16
+                },
+                "g": 173,
+                "f": [
+                    "orange",
+                    "green",
+                    54,
+                    -9
+                ],
+                "i": -23
+            },
+            "f": {
+                "c": 110,
+                "a": "yellow",
+                "b": [
+                    {
+                        "a": 155
+                    },
+                    156,
+                    "violet",
+                    94,
+                    "yellow"
+                ],
+                "d": {
+                    "e": 91,
+                    "a": -18,
+                    "d": "red",
+                    "c": [
+                        "green",
+                        "orange",
+                        "orange",
+                        190,
+                        "yellow",
+                        158,
+                        "blue",
+                        "orange",
+                        "blue",
+                        4
+                    ],
+                    "h": 143,
+                    "b": "orange",
+                    "g": 145,
+                    "f": [
+                        "orange",
+                        37,
+                        "yellow",
+                        -22,
+                        {
+                            "c": 30,
+                            "a": 78,
+                            "b": 196,
+                            "d": 84
+                        },
+                        -7,
+                        [
+                            "yellow"
+                        ]
+                    ]
+                }
+            }
+        },
+        "b": [
+            [
+                {
+                    "c": 0,
+                    "a": 108,
+                    "b": "green",
+                    "d": {
+                        "e": 59,
+                        "c": 119,
+                        "a": 104,
+                        "b": 167,
+                        "d": "blue"
+                    }
+                },
+                [
+                    189,
+                    "blue",
+                    121,
+                    [
+                        [
+                            "green",
+                            "orange",
+                            "orange",
+                            -17,
+                            192,
+                            "red"
+                        ],
+                        {
+                            "a": "violet"
+                        },
+                        "green",
+                        {
+                            "c": 42,
+                            "a": "blue",
+                            "b": "red"
+                        },
+                        {
+                            "e": 78,
+                            "a": "blue",
+                            "d": "violet",
+                            "c": -9,
+                            "h": "violet",
+                            "b": 115,
+                            "g": "orange",
+                            "f": "violet",
+                            "i": "red"
+                        }
+                    ],
+                    57,
+                    "violet"
+                ],
+                "green"
+            ],
+            [
+                [
+                    "blue",
+                    [
+                        1,
+                        53,
+                        "orange"
+                    ],
+                    {
+                        "e": [
+                            "green",
+                            -12,
+                            "blue",
+                            "orange",
+                            "green",
+                            136,
+                            173
+                        ],
+                        "a": "violet",
+                        "d": -43,
+                        "c": {
+                            "e": 144,
+                            "c": 133,
+                            "a": "yellow",
+                            "g": 154,
+                            "b": "orange",
+                            "d": 127,
+                            "f": 194
+                        },
+                        "h": {
+                            "e": 52,
+                            "a": -43,
+                            "d": "orange",
+                            "c": -45,
+                            "h": "orange",
+                            "b": 150,
+                            "g": -12,
+                            "f": 91,
+                            "i": 6
+                        },
+                        "b": {
+                            "e": "yellow",
+                            "c": "blue",
+                            "a": "violet",
+                            "g": 112,
+                            "b": 174,
+                            "d": "violet",
+                            "f": 90
+                        },
+                        "g": 177,
+                        "f": "blue"
+                    },
+                    "red",
+                    "violet",
+                    96
+                ],
+                "green",
+                "violet",
+                [
+                    {
+                        "a": [
+                            "red",
+                            "red",
+                            46,
+                            "red"
+                        ],
+                        "b": [
+                            "green",
+                            193,
+                            54,
+                            "orange"
+                        ]
+                    },
+                    [
+                        "orange",
+                        8,
+                        1,
+                        [
+                            "violet",
+                            84,
+                            "violet"
+                        ],
+                        155,
+                        "yellow",
+                        151,
+                        "blue",
+                        196
+                    ],
+                    "yellow",
+                    "red",
+                    {
+                        "a": [
+                            "green",
+                            "orange",
+                            "green",
+                            61,
+                            "blue",
+                            39,
+                            -2,
+                            46,
+                            "red",
+                            54
+                        ]
+                    },
+                    "violet",
+                    128
+                ]
+            ]
+        ]
+    }
+}

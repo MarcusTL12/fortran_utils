@@ -7,14 +7,15 @@
 ! 6: array/vec
 ! 7: map
 
-module json_mod
+module json2_mod
     use iso_c_binding
     use astring_mod
     use astring_show_mod
     use string_util_mod
-    use vec_cptr_mod
-    use map_str_cptr_mod
+    use map_str_int_mod
     use show_mod
+    use vec_int8_mod
+    use vec_int_mod
     implicit none
     !
     private
@@ -24,9 +25,9 @@ module json_mod
     public :: json_obj
     type json_obj
         integer(1) :: t
-        type(c_ptr) :: data
+        integer    :: dp ! data pointer
     contains
-        final :: json_finalize
+        ! final :: json_finalize
     end type
     !
     public :: show
@@ -36,13 +37,14 @@ module json_mod
     !
     public :: drop
     interface drop
-        module procedure json_finalize
+        ! module procedure json_finalize
     end interface
 contains
-    function parse_json_file(filename) result(json)
+    function parse_json_file(filename, mem) result(json)
         implicit none
         !
         character(len=*), intent(in) :: filename
+        type(vec_int8), intent(inout) :: mem
         type(json_obj) :: json
         type(astring) :: text
         integer :: i
@@ -54,16 +56,19 @@ contains
         close (1)
         !
         i = 1
-        json = parse_json(text%as_slice(), i)
+        json = parse_json(text%as_slice(), i, mem)
     end function
-    !
-    recursive function parse_json(text, i) result(json)
+    ! !
+    recursive function parse_json(text, i, mem) result(json)
         implicit none
         !
         character, intent(in) :: text(:)
         integer, intent(inout) :: i
+        type(vec_int8), intent(inout) :: mem
         type(json_obj) :: json
         integer :: j
+        !
+        ! print *, i
         !
         do while (text(i) == ' ')
             i = i + 1
@@ -72,14 +77,16 @@ contains
         json%t = 0
         !
         if (str_eq(text(i:i + 3), str_p("null"))) then
+            ! print *, "Found null"
             json%t = 1
-            json%data = c_null_ptr
+            json%dp = 0
             i = i + 4
             return
         end if
         !
         if (str_eq(text(i:i + 3), str_p("true")) .or. &
             str_eq(text(i:i + 4), str_p("false"))) then
+            ! print *, "Found bool"
             json = parse_json_bool(text(i:i + 4), i)
             return
         end if
@@ -92,8 +99,10 @@ contains
             end do
             !
             if (is_numeric(text(i:j))) then
+                ! print *, "Found int"
                 json = parse_json_int(text(i:j))
             else
+                ! print *, "Found real"
                 json = parse_json_real(text(i:j))
             end if
             i = j + 1
@@ -101,6 +110,7 @@ contains
         end if
         !
         if (text(i) == '"') then
+            ! print *, "Found string"
             j = i
             do while (text(j + 1) /= '"')
                 j = j + 1
@@ -111,12 +121,14 @@ contains
         end if
         !
         if (text(i) == '[') then
+            ! print *, "Found array"
             i = i + 1
             json = parse_json_array(text, i)
             return
         end if
         !
         if (text(i) == '{') then
+            ! print *, "Found map"
             i = i + 1
             json = parse_json_map(text, i)
             return
@@ -130,20 +142,22 @@ contains
             character, intent(in) :: text(:)
             integer, intent(inout) :: i
             type(json_obj) :: json
-            logical, pointer :: b
+            logical, target :: b
+            integer(1), pointer :: bytes(:)
             !
-            allocate (b)
+            call c_f_pointer(c_loc(b), bytes, [sizeof(b)])
+            !
+            json%t = 2
+            json%dp = size(mem) + 1
             !
             b = .not. str_eq(text, str_p("false"))
+            call mem%extend(bytes)
             !
             if (b) then
                 i = i + 4
             else
                 i = i + 5
             end if
-            !
-            json%t = 2
-            json%data = c_loc(b)
         end function
         !
         function parse_json_int(text) result(json)
@@ -151,13 +165,16 @@ contains
             !
             character, intent(in) :: text(:)
             type(json_obj) :: json
-            integer, pointer :: n
-            !
-            allocate (n)
-            n = parse_int(text)
+            integer, target :: n
+            integer(1), pointer :: bytes(:)
             !
             json%t = 3
-            json%data = c_loc(n)
+            json%dp = size(mem) + 1
+            !
+            call c_f_pointer(c_loc(n), bytes, [sizeof(n)])
+            n = parse_int(text)
+            !
+            call mem%extend(bytes)
         end function
         !
         function parse_json_real(text) result(json)
@@ -165,27 +182,33 @@ contains
             !
             character, intent(in) :: text(:)
             type(json_obj) :: json
-            real, pointer :: n
+            real, target :: n
+            integer(1), pointer :: bytes(:)
             !
-            allocate (n)
+            json%t = 3
+            json%dp = size(mem) + 1
+            !
+            call c_f_pointer(c_loc(n), bytes, [sizeof(n)])
             n = parse_real(text)
             !
-            json%t = 4
-            json%data = c_loc(n)
+            call mem%extend(bytes)
         end function
         !
         function parse_json_string(text) result(json)
             implicit none
             !
-            character, intent(in) :: text(:)
+            character, target, intent(in) :: text(:)
             type(json_obj) :: json
-            type(astring), pointer :: s
-            !
-            allocate (s)
-            s = text
+            type(astring), target :: s
+            integer(1), pointer :: bytes(:)
             !
             json%t = 5
-            json%data = c_loc(s)
+            json%dp = size(mem) + 1
+            !
+            call c_f_pointer(c_loc(s), bytes, [sizeof(s)])
+            s = text
+            !
+            call mem%extend(bytes)
         end function
         !
         function parse_json_array(text, i) result(json)
@@ -194,12 +217,11 @@ contains
             character, intent(in) :: text(:)
             integer, intent(inout) :: i
             type(json_obj) :: json
-            type(json_obj), pointer :: buff
-            type(c_ptr) :: p_buff
-            type(vec_cptr), pointer :: v
+            type(json_obj), target :: buff
+            type(vec_int), target :: v
             logical :: done
-            !
-            allocate (v)
+            integer(1), pointer :: bytes(:)
+            integer :: ibuf
             !
             call v%new()
             !
@@ -215,17 +237,22 @@ contains
                     i = i + 1
                     done = .true.
                 else
-                    allocate (buff)
-                    buff = parse_json(text, i)
+                    buff = parse_json(text, i, mem)
                     !
-                    p_buff = c_loc(buff)
+                    ibuf = size(mem) + 1
+                    call v%push(ibuf)
                     !
-                    call v%push(p_buff)
+                    call c_f_pointer(c_loc(buff), bytes, [sizeof(buff)])
+                    call mem%extend(bytes)
                 end if
             end do
             !
             json%t = 6
-            json%data = c_loc(v)
+            json%dp = size(mem) + 1
+            !
+            call c_f_pointer(c_loc(v), bytes, [sizeof(v)])
+            !
+            call mem%extend(bytes)
         end function
         !
         function parse_json_map(text, i) result(json)
@@ -234,14 +261,12 @@ contains
             character, intent(in) :: text(:)
             integer, intent(inout) :: i
             type(json_obj) :: json
-            type(json_obj), pointer :: buff
-            type(c_ptr) :: p_buff
+            type(json_obj), target :: buff
             type(astring) :: k_buff
-            type(map_str_cptr), pointer :: m
+            type(map_str_int), target :: m
+            integer(1), pointer :: bytes(:)
             logical :: done
-            integer :: j
-            !
-            allocate (m)
+            integer :: j, ibuf
             !
             call m%new()
             !
@@ -272,31 +297,35 @@ contains
                     !
                     i = i + 1
                     !
-                    allocate (buff)
+                    buff = parse_json(text, i, mem)
+                    ibuf = size(mem) + 1
+                    call m%insert(k_buff, ibuf)
                     !
-                    buff = parse_json(text, i)
-                    p_buff = c_loc(buff)
-                    call m%insert(k_buff, p_buff)
+                    call c_f_pointer(c_loc(buff), bytes, [sizeof(buff)])
+                    call mem%extend(bytes)
                 end if
             end do
             !
             json%t = 7
-            json%data = c_loc(m)
+            json%dp = size(mem) + 1
+            !
+            call c_f_pointer(c_loc(m), bytes, [sizeof(m)])
+            call mem%extend(bytes)
         end function
     end function
     !
-    subroutine json_show(json)
+    subroutine json_show(json, mem)
         implicit none
         !
-        type(json_obj) :: json
+        type(json_obj), intent(in)  :: json
+        type(vec_int8), intent(in)  :: mem
         logical, pointer            :: bp
         integer, pointer            :: ip
         real, pointer               :: rp
         type(astring), pointer      :: sp
-        type(vec_cptr), pointer     :: vp
-        type(map_str_cptr), pointer :: mp
+        type(vec_int), pointer      :: vp
+        type(map_str_int), pointer  :: mp
         type(json_obj), pointer     :: jp
-        type(c_ptr), pointer        :: cp
         integer :: i
         logical :: first, stat
         !
@@ -304,91 +333,91 @@ contains
         case (1)
             call show("null")
         case (2)
-            call c_f_pointer(json%data, bp)
+            call c_f_pointer(c_loc(mem%at(json%dp)), bp)
             call show(bp)
         case (3)
-            call c_f_pointer(json%data, ip)
+            call c_f_pointer(c_loc(mem%at(json%dp)), ip)
             call show(ip)
         case (4)
-            call c_f_pointer(json%data, rp)
+            call c_f_pointer(c_loc(mem%at(json%dp)), rp)
             call show(rp)
         case (5)
-            call c_f_pointer(json%data, sp)
+            call c_f_pointer(c_loc(mem%at(json%dp)), sp)
             call show(sp)
         case (6)
-            call c_f_pointer(json%data, vp)
+            call c_f_pointer(c_loc(mem%at(json%dp)), vp)
             call show('[')
             first = .true.
             do i = 1, size(vp)
                 if (.not. first) call show(", ")
                 first = .false.
-                call c_f_pointer(vp%at(i), jp)
-                call show(jp)
+                call c_f_pointer(c_loc(mem%at(vp%at(i))), jp)
+                call show(jp, mem)
             end do
             call show(']')
         case (7)
-            call c_f_pointer(json%data, mp)
+            call c_f_pointer(c_loc(mem%at(json%dp)), mp)
             call show('{')
             first = .true.
             stat = .false.
-            do while (mp%next_kvp(sp, cp, stat))
+            do while (mp%next_kvp(sp, ip, stat))
                 if (.not. first) call show(", ")
                 first = .false.
-                call c_f_pointer(cp, jp)
+                call c_f_pointer(c_loc(mem%at(ip)), jp)
                 call show(sp)
                 call show(" => ")
-                call show(jp)
+                call show(jp, mem)
             end do
             call show('}')
         end select
     end subroutine
     !
-    subroutine json_finalize(json)
-        implicit none
-        !
-        type(json_obj) :: json
-        logical, pointer            :: bp
-        integer, pointer            :: ip
-        real, pointer               :: rp
-        type(astring), pointer      :: sp
-        type(vec_cptr), pointer     :: vp
-        type(map_str_cptr), pointer :: mp
-        type(json_obj), pointer     :: jp
-        type(c_ptr), pointer        :: cp
-        integer :: i
-        logical :: stat
-        !
-        ! print *, "dropping", json%t
-        !
-        select case (json%t)
-        case (2)
-            call c_f_pointer(json%data, bp)
-            deallocate (bp)
-        case (3)
-            call c_f_pointer(json%data, ip)
-            deallocate (ip)
-        case (4)
-            call c_f_pointer(json%data, rp)
-            deallocate (rp)
-        case (5)
-            call c_f_pointer(json%data, sp)
-            call drop(sp)
-            deallocate (sp)
-        case (6)
-            call c_f_pointer(json%data, vp)
-            do i = 1, size(vp)
-                call c_f_pointer(vp%at(i), jp)
-                deallocate (jp)
-            end do
-            deallocate (vp)
-        case (7)
-            call c_f_pointer(json%data, mp)
-            stat = .false.
-            do while (mp%next_kvp(sp, cp, stat))
-                call c_f_pointer(cp, jp)
-                deallocate (jp)
-            end do
-            deallocate (mp)
-        end select
-    end subroutine
+    ! subroutine json_finalize(json)
+    !     implicit none
+    !     !
+    !     type(json_obj) :: json
+    !     logical, pointer            :: bp
+    !     integer, pointer            :: ip
+    !     real, pointer               :: rp
+    !     type(astring), pointer      :: sp
+    !     type(vec_cptr), pointer     :: vp
+    !     type(map_str_cptr), pointer :: mp
+    !     type(json_obj), pointer     :: jp
+    !     type(c_ptr), pointer        :: cp
+    !     integer :: i
+    !     logical :: stat
+    !     !
+    !     ! print *, "dropping", json%t
+    !     !
+    !     select case (json%t)
+    !     case (2)
+    !         call c_f_pointer(json%data, bp)
+    !         deallocate (bp)
+    !     case (3)
+    !         call c_f_pointer(json%data, ip)
+    !         deallocate (ip)
+    !     case (4)
+    !         call c_f_pointer(json%data, rp)
+    !         deallocate (rp)
+    !     case (5)
+    !         call c_f_pointer(json%data, sp)
+    !         call drop(sp)
+    !         deallocate (sp)
+    !     case (6)
+    !         call c_f_pointer(json%data, vp)
+    !         do i = 1, size(vp)
+    !             call c_f_pointer(vp%at(i), jp)
+    !             deallocate (jp)
+    !         end do
+    !         deallocate (vp)
+    !     case (7)
+    !         call c_f_pointer(json%data, mp)
+    !         stat = .false.
+    !         do while (mp%next_kvp(sp, cp, stat))
+    !             call c_f_pointer(cp, jp)
+    !             deallocate (jp)
+    !         end do
+    !         deallocate (mp)
+    !     end select
+    ! end subroutine
 end module

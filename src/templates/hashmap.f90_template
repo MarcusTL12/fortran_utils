@@ -147,6 +147,7 @@ contains
                 end if
             end do
             deallocate (self%meta, self%keys, self%vals)
+            self%owned = .false.
         end if
     end subroutine
     !

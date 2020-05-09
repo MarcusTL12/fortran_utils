@@ -38,14 +38,14 @@ def compile_dir(p):
 
 def delete_all_ext(dir, ext):
     for f in os.listdir(dir):
-        (root, ext2) = os.path.splitext(f)
+        (_, ext2) = os.path.splitext(f)
         if ext == ext2:
             os.remove(os.path.join(dir, f))
 
 
 def copy_all_ext(d2, ext):
     for f in os.listdir("."):
-        (root, ext2) = os.path.splitext(f)
+        (_, ext2) = os.path.splitext(f)
         if ext == ext2:
             copyfile(f, os.path.join(d2, f))
 

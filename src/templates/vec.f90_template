@@ -82,6 +82,7 @@ module MOD_NAME
         generic, public     :: operator(/=) => F(neq)
 #endif
         procedure, public   :: truncate => F(truncate)
+        procedure, public   :: extend => F(extend)
     end type
     !
     public :: size
@@ -124,6 +125,7 @@ contains
                 call drop(self%data(i))
             end do
             deallocate (self%data)
+            self%owned = .false.
         end if
     end subroutine
     !
@@ -382,6 +384,17 @@ contains
         call show(']')
     end subroutine
 #endif
+    subroutine F(extend) (v, d)
+        implicit none
+        !
+        class(VEC), intent(inout) :: v
+        TT_TYPE, intent(inout) :: d(:)
+        integer :: i
+        !
+        do i = 1, size(d)
+            call v%push(d(i))
+        end do
+    end subroutine
 end module
 
 #undef T_TYPE

@@ -1,6 +1,7 @@
 program main
     use astring_mod
     use vec_int_mod
+    use vec_int8_mod
     use vec_str_mod
     use vec_vec_int_mod
     use string_util_mod
@@ -8,7 +9,7 @@ program main
     use map_str_str_mod
     use md5_mod
     use math_util_mod
-    use json_mod
+    ! use json2_mod
     use map_str_cptr_mod
     implicit none
     !
@@ -495,30 +496,30 @@ contains
         use iso_c_binding
         implicit none
         !
-        type(json_obj) :: j
-        type(map_str_cptr), pointer :: m
+        ! type(json_obj) :: j
+        ! type(vec_int8) :: mem
+        ! !
+        ! call mem%new()
+        ! !
+        ! j = parse_json_file("res/ex1.json", mem)
+        ! !
+        ! print *, size(mem)
+        ! !
+        ! call show(j, mem)
+        ! print *
         !
-        j = parse_json_file("res/ex1.json")
-        !
-        call show(j)
-        print *
-        !
-        call c_f_pointer(j%data, m)
-        !
-        print *, m%meta
     end subroutine
     !
     subroutine test21()
+        use iso_c_binding
         implicit none
         !
-        type(astring) :: s
-        !
-        s = str_p("ab.")
-        !
-        print *, modulo(hash(s), 16)
-        !
-        s = str_p("AB.")
-        !
-        print *, modulo(hash(s), 16)
+        ! type tmp_T
+        !     integer, pointer :: i(:)
+        ! end type
+        ! !
+        ! type (tmp_T) :: t
+        ! !
+        ! print *, sizeof(t)
     end subroutine
 end program main

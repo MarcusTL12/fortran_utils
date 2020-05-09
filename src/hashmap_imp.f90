@@ -32,3 +32,13 @@
 #define V_MOD iso_c_binding
 
 #include "templates/hashmap.f90_template"
+
+
+#define K_TYPE astring
+#define K_ALIAS str
+#define K_MOD astring_mod
+
+#define V_TYPE integer
+#define V_ALIAS int
+
+#include "templates/hashmap.f90_template"
