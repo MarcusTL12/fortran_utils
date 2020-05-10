@@ -39,3 +39,12 @@
 #define T_DISABLE_EQ
 
 #include "templates/vec.f90_template"
+
+
+#define T_TYPE vec_str
+#define T_ALIAS vec_str
+#define T_MOD vec_str_mod
+#define T_HASH
+#define T_SHOW
+
+#include "templates/vec.f90_template"
