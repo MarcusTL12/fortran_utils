@@ -10,6 +10,7 @@ module ownership_mod
         module procedure transfer_int8
         module procedure transfer_char
         module procedure transfer_cptr
+        module procedure transfer_bool
     end interface
     !
     public :: drop
@@ -18,6 +19,7 @@ module ownership_mod
         module procedure drop_char
         module procedure drop_int8
         module procedure drop_cptr
+        module procedure drop_bool
     end interface
 contains
     subroutine transfer_int(a, b)
@@ -52,6 +54,14 @@ contains
         b = a
     end subroutine
     !
+    subroutine transfer_bool(a, b)
+        implicit none
+        !
+        logical, intent(inout) :: a, b
+        !
+        b = a
+    end subroutine
+    !
     subroutine drop_int(a)
         implicit none
         !
@@ -80,6 +90,14 @@ contains
         implicit none
         !
         type(c_ptr), intent(inout) :: a
+        return
+        a = a
+    end subroutine
+    !
+    subroutine drop_bool(a)
+        implicit none
+        !
+        logical, intent(inout) :: a
         return
         a = a
     end subroutine

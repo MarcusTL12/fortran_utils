@@ -48,3 +48,12 @@
 #define T_SHOW
 
 #include "templates/vec.f90_template"
+
+
+#define T_TYPE logical
+#define T_ALIAS bool
+#define T_HASH
+#define T_SHOW
+#define T_LOGIC
+
+#include "templates/vec.f90_template"

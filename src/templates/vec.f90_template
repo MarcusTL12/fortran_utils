@@ -6,6 +6,7 @@
 ! T_SHOW defined to derive show
 ! T_SHOW_MOD defined if show is implemented elsewhere from the definition of T
 ! T_DISABLE_EQ defined if contained type does not implement eq/neq
+! T_LOGIC defined to change eq
 
 #include "macros.f90_template"
 
@@ -339,7 +340,11 @@ contains
         !
         F(eq) = .true.
         do i = 1, size(self)
+#ifndef T_LOGIC
             if (self%data(i) /= other%data(i)) then
+#else
+            if (self%data(i) .neqv. other%data(i)) then
+#endif
                 F(eq) = .false.
                 exit
             end if

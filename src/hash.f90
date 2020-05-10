@@ -67,6 +67,7 @@ module hash_mod
         module procedure hash_int
         module procedure hash_int8
         module procedure hash_char
+        module procedure hash_bool
     end interface
     !
     public :: fuse_hash
@@ -156,6 +157,21 @@ contains
         integer(8)            :: h
         !
         h = md5_trunc((/int(ichar(a), 1)/))
+    end function
+    !
+    function hash_bool(a) result(h)
+        implicit none
+        !
+        logical, intent(in) :: a
+        integer(8)            :: h
+        !
+        if (a) then
+            h = transfer((/-57, 1073741823/), h)
+        else
+            h = transfer((/-1, 536870911/), h)
+        end if
+        !
+        ! h = md5_trunc((/int(ichar(a), 1)/))
     end function
     !
     ! function hash_str(a) result(h)
