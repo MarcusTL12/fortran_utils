@@ -7,7 +7,7 @@ module string_util_mod
     private
     !
     public :: split_with_delim, str_p, str_eq, str_begins_with, &
-              file_to_lines, is_str_real, parse_real
+              file_to_lines, is_str_real, parse_real, is_lowercase, is_uppercase
     !
     public :: tostring
     interface tostring
@@ -337,4 +337,24 @@ contains
         end do
         close (1)
     end subroutine
+    !
+    logical function is_lowercase(c)
+        implicit none
+        !
+        character, intent(in) :: c
+        integer(1) :: i
+        !
+        i = transfer(c, i)
+        is_lowercase = i >= 97 .and. i <= 122
+    end function
+    !
+    logical function is_uppercase(c)
+        implicit none
+        !
+        character, intent(in) :: c
+        integer(1) :: i
+        !
+        i = transfer(c, i)
+        is_uppercase = i >= 65 .and. i <= 90
+    end function
 end module
