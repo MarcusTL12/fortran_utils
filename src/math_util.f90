@@ -1,9 +1,12 @@
 module math_util_mod
+    use vec_int_mod
     implicit none
     !
     private
     !
     public :: next_permutation, clamp
+    !
+    integer, allocatable :: primes(:)
     !
     public :: inc
     interface inc
@@ -71,4 +74,6 @@ contains
         !
         clamp = min(max(n, l), h)
     end function
+    !
+    
 end module
