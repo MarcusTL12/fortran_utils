@@ -514,6 +514,6 @@ contains
         use iso_c_binding
         implicit none
         !
-        print *, sum_divisors(5040)
+        print *, sum_divisors(100004)
     end subroutine
 end program main
