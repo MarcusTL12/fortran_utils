@@ -4,7 +4,8 @@ module math_util_mod
     !
     private
     !
-    public :: next_permutation, clamp, prime
+    public :: next_permutation, clamp, prime, factorize, next_factor, &
+              sum_divisors
     !
     integer, allocatable :: primes(:)
     !
@@ -78,7 +79,7 @@ contains
     subroutine load_primes()
         implicit none
         !
-        integer, parameter :: amt_primes = 1229
+        integer, parameter :: amt_primes = 1230
         integer :: p, i
         !
         allocate (primes(amt_primes))
@@ -100,5 +101,64 @@ contains
         if (.not. allocated(primes)) call load_primes()
         !
         prime = primes(i)
+    end function
+    !
+    subroutine next_factor(n, i, p, e)
+        implicit none
+        !
+        integer, intent(inout) :: n
+        integer, intent(out) :: p, e
+        integer, intent(inout) :: i
+        !
+        do while (prime(i) <= n)
+            if (modulo(n, prime(i)) == 0) then
+                p = prime(i)
+                e = 1
+                n = n / p
+                !
+                do while (modulo(n, p) == 0)
+                    e = e + 1
+                    n = n / p
+                end do
+                exit
+            end if
+            !
+            i = i + 1
+        end do
+    end subroutine
+    !
+    subroutine factorize(n, p, e)
+        implicit none
+        !
+        integer, intent(in) :: n
+        type(vec_int), intent(inout) :: p, e
+        integer :: i, m, pr, ex
+        !
+        call p%clear()
+        call e%clear()
+        !
+        i = 1
+        m = n
+        !
+        do while (m > 1)
+            call next_factor(m, i, pr, ex)
+            call p%push(pr)
+            call e%push(ex)
+        end do
+    end subroutine
+    !
+    integer function sum_divisors(n)
+        implicit none
+        !
+        integer, intent(in) :: n
+        integer :: m, i, p, e
+        !
+        m = n
+        i = 1
+        sum_divisors = 1
+        do while (m > 1)
+            call next_factor(m, i, p, e)
+            sum_divisors = sum_divisors * (p**(e + 1) - 1) / (p - 1)
+        end do
     end function
 end module

@@ -4,11 +4,13 @@ from time import time
 import os
 from shutil import copyfile
 
+fnr = 0
+
 args = sys.argv
 
-bin_name = "utiltest"
+bin_name = "aoc2015"
 mod_cpy_dirs = [
-    "src/"
+    "src/",
 ]
 
 if len(args) >= 2:
@@ -18,11 +20,15 @@ else:
 
 
 def compile_file(f):
+    global fnr
     command = ["gfortran", "-cpp", "-c"]
     if optimize:
         command.append("-O3")
+    command.append("-o")
+    command.append(str(fnr) + ".o")
     command.append(f)
     subprocess.call(command)
+    fnr += 1
 
 
 def compile_dir(p):
@@ -38,14 +44,14 @@ def compile_dir(p):
 
 def delete_all_ext(dir, ext):
     for f in os.listdir(dir):
-        (_, ext2) = os.path.splitext(f)
+        (root, ext2) = os.path.splitext(f)
         if ext == ext2:
             os.remove(os.path.join(dir, f))
 
 
 def copy_all_ext(d2, ext):
     for f in os.listdir("."):
-        (_, ext2) = os.path.splitext(f)
+        (root, ext2) = os.path.splitext(f)
         if ext == ext2:
             copyfile(f, os.path.join(d2, f))
 
@@ -77,6 +83,7 @@ else:
     command.extend(args[1:])
 
 # Running the binary
+print("Running...")
 t = time()
 subprocess.call(command)
 t = time() - t
