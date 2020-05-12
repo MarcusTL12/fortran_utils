@@ -4,7 +4,7 @@ module math_util_mod
     !
     private
     !
-    public :: next_permutation, clamp
+    public :: next_permutation, clamp, prime
     !
     integer, allocatable :: primes(:)
     !
@@ -75,5 +75,30 @@ contains
         clamp = min(max(n, l), h)
     end function
     !
-    
+    subroutine load_primes()
+        implicit none
+        !
+        integer, parameter :: amt_primes = 1229
+        integer :: p, i
+        !
+        allocate (primes(amt_primes))
+        open (1, file="res/primes.txt")
+        !
+        do i = 1, amt_primes
+            read (1, *) p
+            primes(i) = p
+        end do
+        !
+        close (1)
+    end subroutine
+    !
+    integer function prime(i)
+        implicit none
+        !
+        integer, intent(in) :: i
+        !
+        if (.not. allocated(primes)) call load_primes()
+        !
+        prime = primes(i)
+    end function
 end module

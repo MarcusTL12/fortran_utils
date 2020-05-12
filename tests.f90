@@ -514,12 +514,6 @@ contains
         use iso_c_binding
         implicit none
         !
-        ! type tmp_T
-        !     integer, pointer :: i(:)
-        ! end type
-        ! !
-        ! type (tmp_T) :: t
-        ! !
-        ! print *, sizeof(t)
+        print *, prime(25)
     end subroutine
 end program main
