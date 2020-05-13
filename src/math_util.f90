@@ -5,7 +5,7 @@ module math_util_mod
     private
     !
     public :: next_permutation, clamp, prime, factorize, next_factor, &
-              sum_divisors, nextprime, isprime
+              sum_divisors, nextprime, isprime, amt_primes
     !
     integer, parameter :: amt_primes = 1230
     integer, allocatable :: primes(:)
