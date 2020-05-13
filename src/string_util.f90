@@ -7,7 +7,8 @@ module string_util_mod
     private
     !
     public :: split_with_delim, str_p, str_eq, str_begins_with, &
-              file_to_lines, is_str_real, parse_real, is_lowercase, is_uppercase
+              file_to_lines, is_str_real, parse_real, is_lowercase, &
+              is_uppercase, split_whitespace
     !
     public :: tostring
     interface tostring
@@ -98,6 +99,40 @@ contains
         p => str(j:size(str))
         call buffer%from_borrow(p)
         call ret%push(buffer)
+    end subroutine
+    !
+    subroutine split_whitespace(str, ret)
+        implicit none
+        !
+        character, target, intent(in)   :: str(:)
+        type(vec_str), intent(inout)    :: ret
+        character, pointer :: p(:)
+        type(astring)  :: buffer
+        integer :: i, j
+        !
+        i = 1
+        do while (i <= size(str))
+            do while (str(i) == ' ')
+                i = i + 1
+                if (i > size(str)) return
+            end do
+            !
+            j = i
+            do while (j <= size(str) .and. str(j) /= ' ')
+                j = j + 1
+            end do
+            !
+            p => str(i:j - 1)
+            call buffer%from_borrow(p)
+            call ret%push(buffer)
+            i = j
+        end do
+        !
+        if (j <= size(str)) then
+            p => str(j:size(str))
+            call buffer%from_borrow(p)
+            call ret%push(buffer)
+        end if
     end subroutine
     !
     logical function readline_to_string(unit, s) result(res)
