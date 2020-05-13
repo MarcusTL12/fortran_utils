@@ -1,4 +1,4 @@
 *.o
 *.mod
-utiltest
+aoc2015
 ./res
