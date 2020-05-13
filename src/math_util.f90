@@ -5,7 +5,8 @@ module math_util_mod
     private
     !
     public :: next_permutation, clamp, prime, factorize, next_factor, &
-              sum_divisors, nextprime, isprime, amt_primes
+              sum_divisors, nextprime, isprime, approx_sqrt, sort, &
+              get_divisors
     !
     integer, parameter :: amt_primes = 1230
     integer, allocatable :: primes(:)
@@ -238,4 +239,132 @@ contains
             end do
         end function
     end function
+    !
+    integer function approx_sqrt(n)
+        implicit none
+        !
+        integer, intent(in) :: n
+        integer :: nb
+        !
+        nb = 31
+        do while (iand(ishft(n, -nb), 1) == 0)
+            nb = nb - 1
+        end do
+        !
+        approx_sqrt = ishft(1, ishft(nb, -1) + 1)
+    end function
+    !
+    recursive subroutine sort(a)
+        implicit none
+        !
+        integer, intent(inout) :: a(:)
+        integer :: p
+        !
+        if (size(a) > 1) then
+            p = partition()
+            call sort(a(:p - 1))
+            call sort(a(p + 1:))
+        end if
+    contains
+        integer function partition() result(i)
+            implicit none
+            !
+            integer :: j, p, r
+            !
+            r = modulo(irand(), size(a)) + 1
+            call swap(r, size(a))
+            p = a(size(a))
+            i = 1
+            do j = 1, size(a)
+                if (a(j) < p) then
+                    call swap(i, j)
+                    i = i + 1
+                end if
+            end do
+            call swap(i, size(a))
+        end function
+        !
+        subroutine swap(i, j)
+            implicit none
+            !
+            integer, intent(in) :: i, j
+            integer :: tmp
+            !
+            tmp = a(i)
+            a(i) = a(j)
+            a(j) = tmp
+        end subroutine
+    end subroutine
+    !
+    subroutine get_divisors(n, v)
+        implicit none
+        !
+        integer, intent(in) :: n
+        type(vec_int) :: v
+        integer :: n_, count_divisors2, dbuf, x, nsqrt, powx, vlen
+        logical :: x_is_div, powx_is_div
+        !
+        call v%clear()
+        !
+        n_ = n
+        !
+        count_divisors2 = 0
+        do while (iand(n_, 1) == 0)
+            dbuf = ishft(2, count_divisors2)
+            call v%push(dbuf)
+            count_divisors2 = count_divisors2 + 1
+            n_ = ishft(n_, -1)
+        end do
+        !
+        x = 3
+        nsqrt = approx_sqrt(n_)
+        do while (x < nsqrt)
+            powx = x
+            vlen = size(v)
+            x_is_div = .false.
+            !
+            powx_is_div = modulo(n_, x) == 0
+            do while (powx_is_div)
+                n_ = n_ / x
+                call v%push(powx)
+                call push_new_divs(powx)
+                powx_is_div = modulo(n_, x) == 0
+                if (powx_is_div) then
+                    powx = powx * x
+                end if
+                x_is_div = .true.
+            end do
+            x = x + 2
+            if (x_is_div) then
+                nsqrt = approx_sqrt(n_)
+            end if
+        end do
+        !
+        if (n_ > 1 .and. n_ /= n) then
+            vlen = size(v)
+            call v%push(n_)
+            call push_new_divs(n_)
+        end if
+        !
+        dbuf = 1
+        call v%push(dbuf)
+        if (size(v) > 1) then
+            call sort(v%as_slice())
+        else if (n /= 1) then
+            dbuf = n
+            call v%push(dbuf)
+        end if
+    contains
+        subroutine push_new_divs(x)
+            implicit none
+            !
+            integer, intent(in) :: x
+            integer :: i
+            !
+            do i = 1, vlen
+                dbuf = x * v%at(i)
+                call v%push(dbuf)
+            end do
+        end subroutine
+    end subroutine
 end module

@@ -514,6 +514,15 @@ contains
         use iso_c_binding
         implicit none
         !
-        print *, sum_divisors(100004)
+        integer :: a
+        type(vec_int) :: v
+        !
+        a = 100000007
+        call v%new()
+        !
+        call get_divisors(a, v)
+        !
+        call show(v)
+        print *
     end subroutine
 end program main
