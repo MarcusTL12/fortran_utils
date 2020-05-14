@@ -1,5 +1,5 @@
 ! T_TYPE contained type
-! T_ALIAS contained type name alias
+! T_ALIAS optional; contained type name alias
 ! T_MOD defined if T_TYPE if a derived type. This is the module of the type.
 ! T_VEC defined if you want to override the auto generated name i.e. string
 ! T_HASH defined to derive hash
@@ -9,6 +9,11 @@
 ! T_LOGIC defined to change eq
 
 #include "macros.f90_template"
+
+! defining the alias
+#ifndef T_ALIAS
+#define T_ALIAS T_TYPE
+#endif
 
 ! name of vec type
 #ifdef T_VEC

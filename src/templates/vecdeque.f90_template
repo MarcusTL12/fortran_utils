@@ -1,0 +1,136 @@
+! T_TYPE contained type
+! T_ALIAS optional; contained type name alias
+! T_MOD defined if T_TYPE if a derived type. This is the module of the type.
+! T_VEC optional; the type of the contained vec
+! T_VEC_MOD optional; the module of the contained vec
+! T_HASH optional; defined to derive hash
+! T_SHOW optional; defined to derive show
+! T_SHOW_MOD optional; defined if show is implemented elsewhere from the
+!       definition of T
+! T_DISABLE_EQ optional; defined if contained type does not implement eq/neq
+! T_LOGIC optinal; defined to change eq
+
+#include "macros.f90_template"
+
+! defining the alias
+#ifndef T_ALIAS
+#define T_ALIAS T_TYPE
+#endif
+
+! name of vec type
+#define VEC CAT2(vecdeque_,T_ALIAS)
+
+! name of module
+#define MOD_NAME CAT2(VEC,_mod)
+
+! the thing you use to use T_TYPE
+#ifdef T_MOD
+#define TT_TYPE type(T_TYPE)
+#else
+#define TT_TYPE T_TYPE
+#endif
+
+! defines the contained vec type
+#ifndef T_VEC
+#define T_VEC CAT2(vec_,T_ALIAS)
+#endif
+
+! defining the vec module
+#ifndef T_VEC_MOD
+#define T_VEC_MOD CAT2(T_VEC,_mod)
+#endif
+
+! macro for defining unique function/subroutine names
+#define F(f) CAT3(f,_,VEC)
+
+! the default initial capacity of a new vector
+#define INIT_CAP 8
+
+! the factor to increase the vec with when reallocating
+#define GROWTH_FACTOR 2
+
+module MOD_NAME
+#ifdef T_MOD
+    use T_MOD
+#endif
+#ifdef T_HASH
+    use hash_mod
+#endif
+#ifdef T_SHOW
+    use show_mod
+#endif
+#ifdef T_SHOW_MOD
+    use T_SHOW_MOD
+#endif
+    use T_VEC_MOD
+    use ownership_mod
+    implicit none
+    !
+    private
+    !
+    public :: VEC
+    type VEC
+        integer     :: head, tail
+        type(T_VEC) :: data
+    contains
+        private
+        final :: F(finalizer)
+    end type
+    !
+    public :: size
+    interface size
+        module procedure F(size)
+    end interface
+    !
+    public :: transfer
+    interface transfer
+        module procedure F(transfer)
+    end interface
+    !
+    public :: drop
+    interface drop
+        module procedure F(finalizer)
+    end interface
+contains
+    subroutine F(finalizer) (self)
+        implicit none
+        !
+        type(VEC), intent(inout) :: self
+        !
+        call drop(self%data)
+    end subroutine
+    !
+    integer function F(size) (self)
+        implicit none
+        !
+        type(VEC), intent(in) :: self
+        !
+        if (self%tail >= self%head) then
+            F(size) = self%tail - self%head + 1
+        else
+            F(size) = self%head + size(self%data) - self%tail + 1
+        end if
+    end function
+    !
+    subroutine F(transfer) (a, b)
+        implicit none
+        !
+        type(VEC), intent(inout) :: a, b
+        !
+        b%head = a%head
+        b%tail = a%tail
+        call transfer(a%data, b%data)
+    end subroutine
+end module
+
+#undef T_TYPE
+#undef T_ALIAS
+#undef T_MOD
+#undef T_VEC
+#undef T_VEC_MOD
+#undef TT_TYPE
+#undef T_VEC
+#undef VEC
+#undef T_HASH
+#undef T_SHOW
+#undef T_DISABLE_EQ

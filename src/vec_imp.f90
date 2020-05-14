@@ -17,7 +17,6 @@
 
 
 #define T_TYPE vec_int
-#define T_ALIAS vec_int
 #define T_MOD vec_int_mod
 #define T_HASH
 #define T_SHOW
@@ -42,7 +41,6 @@
 
 
 #define T_TYPE vec_str
-#define T_ALIAS vec_str
 #define T_MOD vec_str_mod
 #define T_HASH
 #define T_SHOW
