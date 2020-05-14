@@ -498,10 +498,10 @@ contains
         !
         character, pointer :: s(:)
         type(vec_str) :: v
-        s => str_p("    Marcus        Takvam   Lexander         ")
+        s => str_p("")
         !
         call v%new()
-        call split_with_delim(s, v)
+        call split_whitespace(s, v)
         !
         call show(v)
         print *

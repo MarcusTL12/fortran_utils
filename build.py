@@ -8,7 +8,7 @@ fnr = 0
 
 args = sys.argv
 
-bin_name = "aoc2015"
+bin_name = "utiltest"
 mod_cpy_dirs = [
     "src/",
 ]

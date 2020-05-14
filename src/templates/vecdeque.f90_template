@@ -75,6 +75,13 @@ module MOD_NAME
     contains
         private
         final :: F(finalizer)
+        ! procedure, public   :: with_capacity => F(with_capacity)
+        ! procedure, public   :: new => F(new)
+        ! procedure, public   :: push => F(push)
+        ! procedure, public   :: at => F(at)
+        ! procedure           :: F(from_vec)
+        ! procedure           :: F(from_arr)
+        ! generic, public     :: assignment(=) => F(from_vec), F(from_arr)
     end type
     !
     public :: size
@@ -120,6 +127,18 @@ contains
         b%head = a%head
         b%tail = a%tail
         call transfer(a%data, b%data)
+    end subroutine
+    !
+    subroutine F(with_capacity) (self, cap)
+        implicit none
+        !
+        class(VEC), intent(inout) :: self
+        integer, intent(in) :: cap
+        !
+        call drop(self)
+        call self%data%with_capacity(cap)
+        self%head = 1
+        self%tail = 1
     end subroutine
 end module
 
