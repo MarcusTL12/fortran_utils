@@ -496,18 +496,15 @@ contains
         use iso_c_binding
         implicit none
         !
-        ! type(json_obj) :: j
-        ! type(vec_int8) :: mem
-        ! !
-        ! call mem%new()
-        ! !
-        ! j = parse_json_file("res/ex1.json", mem)
-        ! !
-        ! print *, size(mem)
-        ! !
-        ! call show(j, mem)
-        ! print *
+        character, pointer :: s(:)
+        type(vec_str) :: v
+        s => str_p("    Marcus        Takvam   Lexander         ")
         !
+        call v%new()
+        call split_with_delim(s, v)
+        !
+        call show(v)
+        print *
     end subroutine
     !
     subroutine test21()
