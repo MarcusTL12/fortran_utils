@@ -89,6 +89,8 @@ module MOD_NAME
 #endif
         procedure, public   :: truncate => F(truncate)
         procedure, public   :: extend => F(extend)
+        procedure, public   :: set_length => F(set_length)
+        procedure, public   :: pop => F(pop)
     end type
     !
     public :: size
@@ -405,6 +407,35 @@ contains
             call v%push(d(i))
         end do
     end subroutine
+    !
+    subroutine F(set_length) (self, l)
+        implicit none
+        !
+        class(VEC), intent(inout) :: self
+        integer, intent(in) :: l
+        !
+        if (l < size(self)) then
+            call self%truncate(l)
+        else if (l <= size(self%data)) then
+            self%length = l
+        else
+            call F(reallocate)(self)
+            self%length = l
+        end if
+    end subroutine
+    !
+    logical function F(pop) (self, x)
+        implicit none
+        !
+        class(VEC), intent(inout) :: self
+        TT_TYPE, intent(inout) :: x
+        !
+        F(pop) = size(self) > 0
+        if (F(pop)) then
+            call transfer(self%at(size(self)), x)
+            self%length = size(self) - 1
+        end if
+    end function
 end module
 
 #undef T_TYPE

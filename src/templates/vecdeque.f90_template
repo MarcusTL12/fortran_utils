@@ -1,8 +1,6 @@
 ! T_TYPE contained type
 ! T_ALIAS optional; contained type name alias
 ! T_MOD defined if T_TYPE if a derived type. This is the module of the type.
-! T_VEC optional; the type of the contained vec
-! T_VEC_MOD optional; the module of the contained vec
 ! T_HASH optional; defined to derive hash
 ! T_SHOW optional; defined to derive show
 ! T_SHOW_MOD optional; defined if show is implemented elsewhere from the
@@ -75,13 +73,15 @@ module MOD_NAME
     contains
         private
         final :: F(finalizer)
-        ! procedure, public   :: with_capacity => F(with_capacity)
-        ! procedure, public   :: new => F(new)
-        ! procedure, public   :: push => F(push)
-        ! procedure, public   :: at => F(at)
-        ! procedure           :: F(from_vec)
-        ! procedure           :: F(from_arr)
-        ! generic, public     :: assignment(=) => F(from_vec), F(from_arr)
+        procedure, public   :: with_capacity => F(with_capacity)
+        procedure, public   :: new => F(new)
+        procedure, public   :: push => F(push)
+        procedure, public   :: at => F(at)
+        procedure           :: F(from_vec)
+        procedure           :: F(from_arr)
+        generic, public     :: assignment(=) => F(from_vec), F(from_arr)
+        procedure, public   :: pop_front => F(pop_front)
+        procedure           :: reallocate => F(reallocate)
     end type
     !
     public :: size
@@ -98,6 +98,12 @@ module MOD_NAME
     interface drop
         module procedure F(finalizer)
     end interface
+#ifdef T_SHOW
+    public :: show
+    interface show
+        module procedure F(show)
+    end interface
+#endif
 contains
     subroutine F(finalizer) (self)
         implicit none
@@ -113,9 +119,9 @@ contains
         type(VEC), intent(in) :: self
         !
         if (self%tail >= self%head) then
-            F(size) = self%tail - self%head + 1
+            F(size) = self%tail - self%head
         else
-            F(size) = self%head + size(self%data) - self%tail + 1
+            F(size) = size(self%data) - self%head + self%tail
         end if
     end function
     !
@@ -137,9 +143,130 @@ contains
         !
         call drop(self)
         call self%data%with_capacity(cap)
+        call self%data%set_length(cap)
         self%head = 1
         self%tail = 1
     end subroutine
+    !
+    subroutine F(new) (self)
+        implicit none
+        !
+        class(VEC), intent(inout) :: self
+        !
+        call self%with_capacity(INIT_CAP)
+    end subroutine
+    !
+    subroutine F(push) (self, val)
+        implicit none
+        !
+        class(VEC), intent(inout) :: self
+        TT_TYPE, intent(inout) :: val
+        !
+        call transfer(val, self%data%at(self%tail))
+        self%tail = self%tail + 1
+        !
+        if (self%tail > size(self%data)) then
+            self%tail = 1
+        end if
+        !
+        if (self%tail == self%head) then
+            call self%reallocate()
+        end if
+    end subroutine
+    !
+    function F(at) (self, i)
+        implicit none
+        !
+        class(VEC), intent(in) :: self
+        integer, intent(in) :: i
+        TT_TYPE, pointer :: F(at)
+        !
+        if (i + self%head - 1 <= size(self%data)) then
+            F(at) => self%data%at(i + self%head - 1)
+        else
+            F(at) => self%data%at(i + self%head - 1 - size(self%data))
+        end if
+    end function
+    !
+    subroutine F(reallocate) (self)
+        implicit none
+        !
+        class(VEC), intent(inout) :: self
+        type(VEC) :: other
+        integer :: i
+        !
+        call other%with_capacity(size(self%data) * GROWTH_FACTOR)
+        !
+        do i = 1, size(self%data)
+            call other%push(self%at(i))
+        end do
+        !
+        call transfer(other, self)
+    end subroutine
+    !
+    subroutine F(from_vec) (self, other)
+        implicit none
+        !
+        class(VEC), intent(inout) :: self
+        type(VEC), intent(in) :: other
+        TT_TYPE :: buf
+        integer :: i
+        !
+        call self%with_capacity(size(other))
+        do i = 1, size(other)
+            associate (p=>other%at(i))
+                buf = p
+                call self%push(buf)
+            end associate
+        end do
+    end subroutine
+    !
+    subroutine F(from_arr) (self, other)
+        implicit none
+        !
+        class(VEC), intent(inout) :: self
+        TT_TYPE, intent(in) :: other(:)
+        TT_TYPE :: buf
+        integer :: i
+        !
+        call self%with_capacity(size(other))
+        do i = 1, size(other)
+            associate (p=>other(i))
+                buf = p
+                call self%push(buf)
+            end associate
+        end do
+    end subroutine
+    !
+    logical function F(pop_front) (self, x) result(nonempty)
+        implicit none
+        !
+        class(VEC), intent(inout) :: self
+        TT_TYPE, intent(inout) :: x
+        !
+        nonempty = size(self) > 0
+        !
+        if (nonempty) then
+            call transfer(self%data%at(self%head), x)
+            self%head = self%head + 1
+            if (self%head > size(self%data)) self%head = 1
+        end if
+    end function
+#ifdef T_SHOW
+    subroutine F(show) (v)
+        implicit none
+        !
+        type(VEC), intent(in) :: v
+        integer :: i
+        !
+        call show('[')
+        do i = 1, size(v)
+            call show(v%at(i))
+            if (i < size(v)) call show(", ")
+        end do
+        call show(']')
+    end subroutine
+#endif
 end module
 
 #undef T_TYPE

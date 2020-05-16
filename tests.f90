@@ -11,6 +11,7 @@ program main
     use math_util_mod
     ! use json2_mod
     use map_str_cptr_mod
+    use vecdeque_int_mod
     implicit none
     !
     character(len=10) :: arg
@@ -60,6 +61,8 @@ program main
         call test20()
     case ('21')
         call test21()
+    case ('22')
+        call test22()
     case default
         print *, "not implemented"
     end select
@@ -521,5 +524,33 @@ contains
         !
         call show(v)
         print *
+    end subroutine
+    !
+    subroutine test22()
+        implicit none
+        !
+        type(vecdeque_int) :: q
+        integer :: i, j
+        type(vec_int) :: v
+        !
+        v = (/3, 1, 4, 1, 5, 9, 2, 6, 5, 3, 5, 8, 9, 7, 9, 3, 2/)
+        !
+        call q%with_capacity(1)
+        j = 3
+        call q%push(j)
+        print *, j, size(q), q%head, q%tail
+        call show(q)
+        print *
+        !
+        do while (q%pop_front(j))
+            if (v%pop(i)) then
+                call q%push(i)
+                call q%push(i)
+            end if
+            !
+            print *, j, size(q), q%head, q%tail
+            call show(q)
+            print *
+        end do
     end subroutine
 end program main

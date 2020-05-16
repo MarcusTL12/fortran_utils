@@ -7,3 +7,4 @@ vec_imp
 string_util
 hashmap_imp
 math_util
+vecdeque_imp
